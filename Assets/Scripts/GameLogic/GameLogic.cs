@@ -1,17 +1,26 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System.Linq;
 using System;
 
-public class GameLogic : MonoBehaviour, IInputReceiver
+public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup
 {
-    [SerializeField] private ListCombo listCombo;
-    private List<Vector2Int> currentInputs;
     public ICanvasOutputReceiver canvasOutputReceiver;
+    public ICanvasInfo canvasInfo;
     public IAudioOutputReceiver audioOutputReceiver;
     public IHeartRateOutputReceiver heartRateOutputReceiver;
     public IAudioInfo audioInfo;
+    public IGenerator generator;
+
+    [Header("Game controller")]
+    [SerializeField] private GameObject activator;
+    [SerializeField] private float missRange;
+    private List<GameObject> listStackNote;
+    private Queue<GameObject> listCurrentNote;
+    private int comboStack;
+    private float noteSpeed;
 
     [Header("Calculate beat!!!")]
     [SerializeField] private float missTime;
@@ -23,55 +32,53 @@ public class GameLogic : MonoBehaviour, IInputReceiver
     private float songPos; //current song pos
     private float lastBeat;
     private bool hasOffsetAdjusted = false;
-    private bool haveFinished = false;
-    private bool isMissed = false;
-
+    private bool hasNoteCreated = false;
 
     private void Start()
     {
-        currentInputs = new List<Vector2Int>();
+        listStackNote = new List<GameObject>();
+        listCurrentNote = new Queue<GameObject>();
+
+        comboStack = 0;
         lastBeat = 0;
         crotchet = 60 / audioInfo.GetBpm();
         beatDuration = crotchet * crotchetsPerSpace;
         offset += startCrotchet * crotchet;
+
+        noteSpeed = canvasInfo.GetHalfInputPanelWidth() / crotchet / 2;
     }
 
     private void Update()
     {
         songPos = audioInfo.GetSongPosition() - offset;
+
         //start the song
-        if (songPos >= 0 && !hasOffsetAdjusted)
+        if (songPos >= 0)
         {
-            hasOffsetAdjusted = true;
-            heartRateOutputReceiver.SetBlipDuration(beatDuration);
-            heartRateOutputReceiver.StartBlip();
+            if (!hasOffsetAdjusted)
+            {
+                hasOffsetAdjusted = true;
+                // heartRateOutputReceiver.SetBlipDuration(beatDuration);
+                // heartRateOutputReceiver.StartBlip();
+            }
+            else
+                canvasOutputReceiver.DisplaySongTime(audioInfo.GetSong().length - songPos);
         }
 
         //test beat
-        if (songPos >= lastBeat + missTime 
-        && !haveFinished //check if you have finish
-        && !isMissed     //check if you missed the previous beat
-        && lastBeat!= 0) //not in the first beat
+        if (songPos >= (lastBeat + beatDuration / 2) && !hasNoteCreated)
         {
-            isMissed = true;
-            haveFinished = false;
-            canvasOutputReceiver.DisplayFinish("Miss");
-            heartRateOutputReceiver.PerformBlip("Miss");
-
-            currentInputs = new List<Vector2Int>();
-            canvasOutputReceiver.DisplaySuggestCombo(new List<Vector2Int>());
-            canvasOutputReceiver.DisplayInputs(currentInputs);
+            hasNoteCreated = true;
+            var newNote = generator.GenerateNote(new Vector3(canvasInfo.GetHalfInputPanelWidth(), 0, 0), noteSpeed, listCurrentNote, canvasInfo.GetInputTransform());
+            newNote.GetComponent<Note>().gameController = this;
         }
-
-        if(songPos >= lastBeat + missTime + 0.1f && lastBeat != 0)
-        {
-            haveFinished = false;
-        }
-
         if (songPos >= (lastBeat + beatDuration))
         {
             lastBeat += beatDuration;
-            isMissed = false;
+            Debug.Log("Beat!!!!!!");
+            var newNote = generator.GenerateNote(new Vector3(canvasInfo.GetHalfInputPanelWidth(), 0, 0), noteSpeed, listCurrentNote, canvasInfo.GetInputTransform());
+            newNote.GetComponent<Note>().gameController = this;
+            hasNoteCreated = false;
         }
     }
 
@@ -115,47 +122,80 @@ public class GameLogic : MonoBehaviour, IInputReceiver
         return result;
     }
 
+    private float GetDistanceClosestNote(GameObject activator, GameObject closestNote)
+    {
+        return Mathf.Abs(((closestNote.transform as RectTransform).anchoredPosition - (activator.transform as RectTransform).anchoredPosition).magnitude);
+    }
+
     // ------------------------------------ Input interface methods -------------------------------------
     public void OnUserFinish()
     {
-        haveFinished = true;
-        isMissed = false;
-        var combos = GetAvailableCombos(currentInputs, listCombo.listComboConfig);
-        var currentCombo = combos.Where(x => x.arrows.Count == currentInputs.Count).FirstOrDefault();
-        if (currentCombo == null)
-        {
-            canvasOutputReceiver.DisplayFinish("Miss");
-            heartRateOutputReceiver.PerformBlip("Miss");
-        }
-        else
-        {
-            canvasOutputReceiver.DisplayFinish(CalculateResult(songPos), currentCombo);
-        }
-        currentInputs = new List<Vector2Int>();
-        canvasOutputReceiver.DisplaySuggestCombo(new List<Vector2Int>());
-        canvasOutputReceiver.DisplayInputs(currentInputs);
     }
 
-    public void OnUserInput(Vector2Int arrow)
+    public void OnUserInput(string key)
     {
-        if (arrow == Vector2Int.up
-        || arrow == Vector2Int.right
-        || arrow == Vector2Int.down
-        || arrow == Vector2Int.left)
+        if (key == "") return;
+        GameObject closestNote = listCurrentNote.ToList()[0];
+        float distance = GetDistanceClosestNote(activator, closestNote);
+        if (distance <= missRange)
         {
-            currentInputs.Add(arrow);
-        }
-
-        var combos = GetAvailableCombos(currentInputs, listCombo.listComboConfig);
-        if (combos.Count == 0)
-        {
-            currentInputs = new List<Vector2Int>();
-            canvasOutputReceiver.DisplaySuggestCombo(new List<Vector2Int>());
+            if (IsInActivatorRange(activator, closestNote, distance) && closestNote.GetComponent<Note>().GetKey() == key)
+            {
+                //TO DO: ANIMATION fade out
+                closestNote.gameObject.SetActive(false);
+                listCurrentNote.Dequeue();
+                comboStack++;
+                canvasOutputReceiver.DisplayCombo(comboStack);
+            }
+            else
+            {
+                // comboStack = 0;
+                // canvasOutputReceiver.DisplayCombo(comboStack);
+                ResetStackList(listStackNote);
+            }
         }
         else
         {
-            canvasOutputReceiver.DisplaySuggestCombo(combos.FirstOrDefault().arrows);
+            return;
         }
-        canvasOutputReceiver.DisplayInputs(currentInputs);
+    }
+
+    private bool IsInActivatorRange(GameObject activator, GameObject closestNote, float distance)
+    {
+        Debug.Log((closestNote.transform as RectTransform).rect.width / 2 + (activator.transform as RectTransform).rect.width / 2);
+        if (distance <= (closestNote.transform as RectTransform).rect.width / 2 + (activator.transform as RectTransform).rect.width / 2)
+            return true;
+        return false;
+    }
+
+    private void ResetStackList(List<GameObject> listStackNote)
+    {
+        listStackNote.Clear();
+        canvasOutputReceiver.RemoveAllStackPanel();
+    }
+
+    // ------------------------------------ Note interface methods -------------------------------------
+    public void AddToStackNote(GameObject note)
+    {
+        note.transform.SetParent(canvasInfo.GetStackTransform());
+        listStackNote.Add(note);
+
+        if (listStackNote.Count >= 5)
+        {
+            //TO DO: ANIMATION rung.
+            ResetStackList(listStackNote);
+            comboStack = 0;
+        }
+    }
+
+    public float GetMissLine()
+    {
+        return missRange;
+    }
+
+    public void RemoveFromCurrentNote(GameObject note)
+    {
+        if (listCurrentNote.Contains(note))
+            listCurrentNote.Dequeue();
     }
 }

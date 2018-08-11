@@ -8,15 +8,17 @@ public class GameplayManager : MonoBehaviour {
 	[SerializeField] private CanvasOutputController canvasOutputController;
 	[SerializeField] private HeartRateMonitor heartRateMonitor;
 	[SerializeField] private GameLogic gameController;
+	[SerializeField] private Generator generator;
 
 	/// <summary>
 	/// Start is called on the frame when a script is enabled just before
 	/// any of the Update methods is called the first time.
 	/// </summary>
-	void Start()
+	void Awake()
 	{
 		BindInput();
 		BindOutput();
+		BindGenerator();
 	}
 
 	void BindInput()
@@ -28,7 +30,13 @@ public class GameplayManager : MonoBehaviour {
 	{
 		gameController.audioInfo = audioOutputController;
 		gameController.audioOutputReceiver = audioOutputController;
+		gameController.canvasInfo = canvasOutputController;
 		gameController.canvasOutputReceiver = canvasOutputController;
 		gameController.heartRateOutputReceiver = heartRateMonitor;
+	}
+
+	void BindGenerator()
+	{
+		gameController.generator = generator;
 	}
 }
