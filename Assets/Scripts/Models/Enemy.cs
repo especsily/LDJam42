@@ -23,7 +23,7 @@ public class Enemy : Character, IPlayerAttackReceiver  {
 			ManaTimer = 0;
 			player.TakeDamage(Damage);
 			player.PlayHurtAnimation();
-			gameLogic.ResetCombo();
+			// gameLogic.ResetCombo();
 		}
 		ManaBar.fillAmount = (AttackTime - ManaTimer) / AttackTime; 
 	}

@@ -65,7 +65,7 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
             if (!hasOffsetAdjusted)
             {
                 hasOffsetAdjusted = true;
-                canvasOutputReceiver.MoveBall(canvasInfo.GetSpaceBarWidth() / beatDuration);
+                canvasOutputReceiver.MoveBall(canvasInfo.GetSpaceBarWidth() / (beatDuration * 2));
                 // heartRateOutputReceiver.SetBlipDuration(beatDuration);
                 // heartRateOutputReceiver.StartBlip();
             }
@@ -74,7 +74,7 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
         }
 
         //test beat
-        if (songPos >= (lastBeat + crotchet * 1.5f) && !hasNoteCreated)
+        if (songPos >= (lastBeat + crotchet) && !hasNoteCreated)
         {
             hasNoteCreated = true;
 
@@ -91,12 +91,12 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
             lastBeat += beatDuration;
             Debug.Log("Beat!!!!!!");
 
-            // //create note
-            // if (!isPauseGen)
-            // {
-            //     var newNote = generator.GenerateNote(bossType, new Vector3(canvasInfo.GetHalfInputPanelWidth(), 0, 0), noteSpeed, listCurrentNote, canvasInfo.GetComingPanelTransform());
-            //     newNote.GetComponent<Note>().gameController = this;
-            // }
+            //create note
+            if (!isPauseGen)
+            {
+                var newNote = generator.GenerateNote(bossType, new Vector3(canvasInfo.GetHalfInputPanelWidth(), 0, 0), noteSpeed, listCurrentNote, canvasInfo.GetComingPanelTransform());
+                newNote.GetComponent<Note>().gameController = this;
+            }
             hasNoteCreated = false;
         }
     }

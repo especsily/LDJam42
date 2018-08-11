@@ -14,6 +14,7 @@ public class Character : MonoBehaviour, IHealth
     protected Animator animator;
     protected SpriteRenderer sr;
     protected AudioSource characterAudio;
+	protected float animState = 0;
 
     public void PlayHurtAnimation()
     {
@@ -26,13 +27,13 @@ public class Character : MonoBehaviour, IHealth
         CurrentHP -= damage;
         if (CurrentHP <= MaxHP * 0.6f)
         {
-            sr.sprite = HalfHPSprite;
+			animator.SetInteger("State", 1);
         }
-        else if (CurrentHP <= 0)
+        if (CurrentHP <= MaxHP * 0.2f)
         {
-            CurrentHP = 0;
-            sr.sprite = ZeroHPSprite;
-            Time.timeScale = 0;
+            // CurrentHP = 0;
+			animator.SetInteger("State", 2);
+            // Time.timeScale = 0;
         }
         DOTween.To(() => HealthBar.fillAmount, x => HealthBar.fillAmount = x, CurrentHP / MaxHP, 0.5f);
     }
