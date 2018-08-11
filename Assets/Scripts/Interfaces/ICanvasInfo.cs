@@ -4,6 +4,8 @@ using UnityEngine;
 
 public interface ICanvasInfo {
 	float GetHalfInputPanelWidth();
-	RectTransform GetInputTransform();
+	RectTransform GetComingPanelTransform();
 	RectTransform GetStackTransform();
+	float GetSpaceBarWidth();
+	bool isFinishAnimation();
 }

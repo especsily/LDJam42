@@ -8,15 +8,26 @@ using DG.Tweening;
 
 public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICanvasInfo
 {
-    //text
+    [Header("Text")]
     [SerializeField] private TMP_Text resultLabel;
+    [SerializeField] private TMP_Text damageLabel;
     [SerializeField] private TMP_Text comboLabel;
     [SerializeField] private TMP_Text timeLabel;
-    // [SerializeField] private TMP_Text skillNameLabel;
+    [SerializeField] private TMP_Text runningOutLabel;
 
+    [Header("Input")]
     //StackLine
-    [SerializeField] private RectTransform stackLine;
+    [SerializeField] private RectTransform stackPanel;
+    [SerializeField] private RectTransform comingPanel;
     [SerializeField] private RectTransform inputPanel;
+    [SerializeField] private RectTransform spaceBar;
+
+    [Header("Space bar")]
+    [SerializeField] private RectTransform ball;
+    [SerializeField] private RectTransform spaceLeftPanel;
+    [SerializeField] private GameObject spaceLeftPrefab;
+    private Sequence sequence;
+    private List<GameObject> spaceLeftList = new List<GameObject>();
 
     // --------------------------------- Display interface methods -------------------------------
     public void DisplayCombo(int combo)
@@ -25,19 +36,86 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
         comboLabel.text = "Combo X " + combo;
         comboLabel.color = Utilities.ChangeColorAlpha(comboLabel.color, 1);
         comboLabel.DOColor(Utilities.ChangeColorAlpha(comboLabel.color, 0), 1f);
-    } 
-
-    public void DisplayResult(string result, Color color)
-    {
-        DOTween.Complete(resultLabel);
-        resultLabel.text = result;
-        resultLabel.color = Utilities.ChangeColorAlpha(color, 1);
-        comboLabel.DOColor(Utilities.ChangeColorAlpha(comboLabel.color, 0), 1f);
     }
 
+    public void DisplayResult(string result, Color color, int comboStack, int damage)
+    {
+        //reset
+        DOTween.Complete(resultLabel);
+        DOTween.Complete(damageLabel);
+        sequence = DOTween.Sequence();
+
+        //display result
+        sequence.AppendCallback(() =>
+        {
+            resultLabel.text = result;
+            resultLabel.color = Utilities.ChangeColorAlpha(color, 1);
+
+            comboLabel.text = "Combo X " + comboStack;
+            comboLabel.color = Utilities.ChangeColorAlpha(comboLabel.color, 1);
+        });
+        sequence.Append(resultLabel.DOColor(Utilities.ChangeColorAlpha(resultLabel.color, 0), 1f));
+        sequence.Join(comboLabel.DOColor(Utilities.ChangeColorAlpha(comboLabel.color, 0), 1f));
+
+        //display damage
+        sequence.AppendCallback(() =>
+        {
+            damageLabel.text = damage.ToString();
+            damageLabel.color = Utilities.ChangeColorAlpha(Color.white, 1);
+        });
+        sequence.Append(damageLabel.DOColor(Utilities.ChangeColorAlpha(Color.red, 0), 1f));
+        sequence.Join(damageLabel.transform.DOLocalMoveY(0, 1f).From());
+        sequence.Append(Camera.main.DOShakePosition(1f, 5, 10));
+        //TO DO: ANIMATION lose health
+        sequence.Play();
+    }
     public void DisplaySongTime(float time)
     {
         timeLabel.text = Utilities.DisplayTime(time);
+    }
+
+    public void MoveBall(float speed)
+    {
+        ball.GetComponent<Ball>().speed = speed;
+        ball.GetComponent<Ball>().isStart = true;
+        ball.GetComponent<Ball>().spaceBarWidth = GetSpaceBarWidth();
+    }
+
+    public void RemoveAllStackPanel()
+    {
+        foreach (Transform child in stackPanel)
+        {
+            Destroy(child.gameObject);
+        }
+    }
+
+    public void RemoveComingPanel()
+    {
+        foreach (Transform child in comingPanel)
+        {
+            Destroy(child.gameObject);
+        }
+    }
+
+    public void DisplaySpaceLeft(bool firstCreate, int spaceLeft)
+    {
+        if(firstCreate)
+        {
+            for (int i = 0; i < spaceLeft; i++)
+            {
+                var space = Instantiate(spaceLeftPrefab, Vector3.zero, Quaternion.identity, spaceLeftPanel);
+                spaceLeftList.Add(space);
+            }
+        }
+        else
+        {
+            spaceLeftList[spaceLeft].gameObject.SetActive(false);
+        }
+    }
+
+    public void DisplayRunningOut()
+    {
+        runningOutLabel.DOColor(Utilities.ChangeColorAlpha(runningOutLabel.color, 1), 0.5f).SetLoops(4, LoopType.Yoyo);
     }
 
     // --------------------------------- Info interface methods -------------------------------
@@ -46,86 +124,30 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
         return inputPanel.GetComponent<RectTransform>().rect.width / 2;
     }
 
-    public RectTransform GetInputTransform()
+    public RectTransform GetComingPanelTransform()
     {
-        return inputPanel;
+        return comingPanel;
+    }
+
+    public float GetSpaceBarWidth()
+    {
+        return spaceBar.rect.width;
     }
 
     public RectTransform GetStackTransform()
     {
-        return stackLine;
+        return stackPanel;
     }
 
-    public void RemoveAllStackPanel()
+    public bool isFinishAnimation()
     {
-        foreach (Transform child in stackLine)
+        if (sequence == null)
         {
-            Destroy(child.gameObject);
+            return false;
+        }
+        else
+        {
+            return sequence.IsPlaying();
         }
     }
-
-    // public void DisplayFinish(string result, ComboConfig combo = null)
-    // {
-    //     resultLabel.text = result;
-    //     resultLabel.color = Utilities.ChangeColorAlpha(SwitchResultColor(result), 1);
-
-    //     DOTween.CompleteAll();
-    //     Sequence sequence = DOTween.Sequence();
-
-    //     if (combo != null)
-    //     {
-    //         skillNameLabel.text = combo.skillName;
-    //         skillNameLabel.color = Utilities.ChangeColorAlpha(skillNameLabel.color, 1);
-
-    //         sequence.Join(skillNameLabel.DOColor(Utilities.ChangeColorAlpha(skillNameLabel.color, 0), 2f));
-    //         sequence.Join(skillNameLabel.transform.DOScale(new Vector3(1.5f, 1.5f), 0.4f).SetLoops(2, LoopType.Yoyo));
-    //     }
-
-    //     sequence.Join(resultLabel.DOColor(Utilities.ChangeColorAlpha(resultLabel.color, 0), 1f));
-    //     sequence.Play();
-    // }
-
-    // public void DisplayInputs(List<Vector2Int> currentInputs)
-    // {
-    //     DisplayComboToUI(currentInputs, inputPanel);
-    // }
-
-    // public void DisplaySuggestCombo(List<Vector2Int> suggestCombo)
-    // {
-    //     DisplayComboToUI(suggestCombo, suggestPanel);
-    // }
-
-    // private void DisplayComboToUI(List<Vector2Int> combo, RectTransform panel)
-    // {
-    //     if (combo.Count == 0)
-    //     {
-    //         foreach (Transform child in panel)
-    //         {
-    //             child.gameObject.SetActive(false);
-    //         }
-    //     }
-
-    //     //display arrows
-    //     for (int i = 0; i < combo.Count; i++)
-    //     {
-    //         if (i < panel.childCount)
-    //         {
-    //             SwitchArrowDirection(panel.GetChild(i) as RectTransform, combo[i]);
-    //             panel.GetChild(i).gameObject.SetActive(true);
-    //         }
-    //         else
-    //         {
-    //             var newArrow = Instantiate(arrowPrefab, Vector3.zero, Quaternion.identity, panel);
-    //             SwitchArrowDirection(newArrow.transform as RectTransform, combo[i]);
-    //         }
-    //     }
-    // }
-
-    // private void SwitchArrowDirection(RectTransform arrowImage, Vector2Int arrowDirection)
-    // {
-    //     if (arrowDirection == Vector2Int.up) arrowImage.rotation = Quaternion.Euler(0, 0, 90);
-    //     if (arrowDirection == Vector2Int.down) arrowImage.rotation = Quaternion.Euler(0, 0, -90);
-    //     if (arrowDirection == Vector2Int.left) arrowImage.rotation = Quaternion.Euler(0, 0, 180);
-    //     if (arrowDirection == Vector2Int.right) arrowImage.rotation = Quaternion.identity;
-    // }
 }

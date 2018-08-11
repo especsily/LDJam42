@@ -6,8 +6,7 @@ using UnityEngine.UI;
 public class Note : MonoBehaviour
 {
     [SerializeField] private string noteKey;
-    [SerializeField] private Sprite normalSprite;
-    [SerializeField] private Sprite destroySprite;
+	[SerializeField] private int type; //0 nut 4 huong, 1 nut 8 huong, 2 nut do?, 3 nut chu*~
     private float noteSpeed;
     private bool isMissed = false;
     public IInputGiveup gameController;
@@ -16,6 +15,11 @@ public class Note : MonoBehaviour
     {
         return noteKey;
     }
+
+	public int GetNoteType()
+	{
+		return type;
+	}
 
     public void SetSpeed(float speed)
     {

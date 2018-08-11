@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GameplayManager : MonoBehaviour {
+	[Header("Controller")]
 	[SerializeField] private InputController inputController;
 	[SerializeField] private AudioOutputController audioOutputController;
 	[SerializeField] private CanvasOutputController canvasOutputController;
-	[SerializeField] private HeartRateMonitor heartRateMonitor;
 	[SerializeField] private GameLogic gameController;
 	[SerializeField] private Generator generator;
+
+	[Header("Characters")]
+	[SerializeField] private Enemy enemy;
+	[SerializeField] private Player player;
 
 	/// <summary>
 	/// Start is called on the frame when a script is enabled just before
@@ -19,6 +23,7 @@ public class GameplayManager : MonoBehaviour {
 		BindInput();
 		BindOutput();
 		BindGenerator();
+		BindCharacter();
 	}
 
 	void BindInput()
@@ -32,11 +37,20 @@ public class GameplayManager : MonoBehaviour {
 		gameController.audioOutputReceiver = audioOutputController;
 		gameController.canvasInfo = canvasOutputController;
 		gameController.canvasOutputReceiver = canvasOutputController;
-		gameController.heartRateOutputReceiver = heartRateMonitor;
 	}
 
 	void BindGenerator()
 	{
 		gameController.generator = generator;
 	}
+
+	void BindCharacter()
+	{
+		gameController.player = player;
+		enemy.gameLogic = gameController;
+		enemy.player = player;
+		player.enemy = enemy;
+		player.attackReceiver = enemy;
+	}
+	
 }

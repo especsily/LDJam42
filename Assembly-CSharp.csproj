@@ -96,8 +96,12 @@
      <Compile Include="Assets\Scripts\Interfaces\IAudioOutputReceiver.cs" />
      <Compile Include="Assets\Scripts\Interfaces\ICanvasInfo.cs" />
      <Compile Include="Assets\Scripts\Interfaces\ICanvasOutputReceiver.cs" />
+     <Compile Include="Assets\Scripts\Interfaces\IEnemyAttackReceiver.cs" />
+     <Compile Include="Assets\Scripts\Interfaces\IHealth.cs" />
      <Compile Include="Assets\Scripts\Interfaces\IHeartRateOutputReceiver.cs" />
      <Compile Include="Assets\Scripts\Interfaces\IInputReceiver.cs" />
+     <Compile Include="Assets\Scripts\Interfaces\IPlayerAttack.cs" />
+     <Compile Include="Assets\Scripts\Interfaces\IPlayerAttackReceiver.cs" />
      <Compile Include="Assets\Scripts\IO\AudioOutputController.cs" />
      <Compile Include="Assets\Scripts\IO\CanvasOutputController.cs" />
      <Compile Include="Assets\Scripts\IO\IGenerator.cs" />
@@ -105,8 +109,12 @@
      <Compile Include="Assets\Scripts\IO\InputController.cs" />
      <Compile Include="Assets\Scripts\Models\Activator.cs" />
      <Compile Include="Assets\Scripts\Models\AudioPlayer.cs" />
+     <Compile Include="Assets\Scripts\Models\Ball.cs" />
+     <Compile Include="Assets\Scripts\Models\Character.cs" />
+     <Compile Include="Assets\Scripts\Models\Enemy.cs" />
      <Compile Include="Assets\Scripts\Models\HeartRateMonitor.cs" />
      <Compile Include="Assets\Scripts\Models\Note.cs" />
+     <Compile Include="Assets\Scripts\Models\Player.cs" />
      <Compile Include="Assets\Scripts\Utilities\Utilities.cs" />
      <None Include="Assets\Libs\Demigiant\DOTweenPro\readme.txt" />
      <None Include="Assets\Libs\TextMesh Pro\Resources\Shaders\TMP_SDF-Surface-Mobile.shader" />

@@ -11,6 +11,7 @@ public class AudioOutputController : MonoBehaviour, IAudioOutputReceiver, IAudio
 
 	[SerializeField] private AudioClip mainTheme;
     [SerializeField] private float bpm;
+    [SerializeField] private float pitch;
     private float songDSPtime;
 
     public float GetBpm()
@@ -20,7 +21,7 @@ public class AudioOutputController : MonoBehaviour, IAudioOutputReceiver, IAudio
 
     public float GetSongPosition()
     {
-		return (float)(AudioSettings.dspTime - songDSPtime);
+		return (float)(AudioSettings.dspTime - songDSPtime) * pitch;
     }
 
     public AudioClip GetSong()
@@ -66,6 +67,7 @@ public class AudioOutputController : MonoBehaviour, IAudioOutputReceiver, IAudio
     {
         audioPlayers = new List<GameObject>();
         mainThemeSource = GetComponent<AudioSource>();
+        mainThemeSource.pitch = pitch;
         songDSPtime = (float)AudioSettings.dspTime;
 		PlayMainThemeSong(mainTheme);
     }
