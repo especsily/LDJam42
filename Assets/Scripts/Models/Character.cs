@@ -12,7 +12,7 @@ public class Character : MonoBehaviour, IHealth
     public IGameController gameController;
     public ICharacterCanvasOutput canvasOutput;
     public IHealth otherCharacter;
-
+    [SerializeField] public Image characterImage;
     [SerializeField] protected AudioClip AttackSounds, HurtSound, IdleSound;
     [SerializeField] protected float HurtAnimTime;
     [SerializeField] protected float MaxHP;
@@ -29,19 +29,25 @@ public class Character : MonoBehaviour, IHealth
         //TO DO: EFFECT
         animator.SetBool("IsHit", false);
 
-        StartCoroutine(ShowCharacterImage(CharacterSprite));
+        ShowCharacterImage(CharacterSprite);
     }
 
 
-    private IEnumerator ShowCharacterImage(Sprite CharacterSprite)
+    private void ShowCharacterImage(Sprite CharacterSprite)
     {
-        float waitTime = 0;
         if (CharacterSprite != null)
         {
-            waitTime = canvasOutput.ShowCharacterImage(CharacterSprite);
+            var sequence = DOTween.Sequence();
+            sequence.Append(characterImage.DOColor(Utilities.ChangeColorAlpha(characterImage.color, 1), 0.5f));
+            sequence.AppendInterval(1f);
+            sequence.Append(characterImage.DOColor(Utilities.ChangeColorAlpha(characterImage.color, 0), 0.5f));
+            sequence.Play();
+            sequence.OnComplete(() => gameController.SetDelayGenerator(false));
         }
-        yield return new WaitForSeconds(waitTime);
-        gameController.SetDelayGenerator(false);
+        else
+        {
+            gameController.SetDelayGenerator(false);
+        }
     }
 
     public void TakeDamage(int damage)
@@ -61,22 +67,23 @@ public class Character : MonoBehaviour, IHealth
                 animator.SetInteger("State", 2);
                 CharacterSprite = FinishImage;
             }
+            StartCoroutine(PlayHurtAnimation(CharacterSprite));
+
             if (CurrentHP <= 0)
             {
                 CurrentHP = 0;
                 if (gameObject.GetComponent<Enemy>() != null)
                 {
                     //enemy
-                    Time.timeScale = 0;
+                    StartCoroutine(menuController.DisplayWinPanel());
                 }
                 else
                 {
                     //player
-                    menuController.DisplayLosePanel(gameController.GetCurrentDealedDamage(), otherCharacter.GetCurrentHP());
-                    audioController.StopMainTheme();
+                    StartCoroutine(menuController.DisplayLosePanel(gameController.GetCurrentDealedDamage(), otherCharacter.GetCurrentHP()));
                 }
+                audioController.StopMainTheme();
             }
-            StartCoroutine(PlayHurtAnimation(CharacterSprite));
 
             GameObject effect = null;
             if (gameObject.GetComponent<Enemy>() != null)

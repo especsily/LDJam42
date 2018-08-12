@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameplayManager : MonoBehaviour {
 	[Header("Controller")]
@@ -14,7 +15,11 @@ public class GameplayManager : MonoBehaviour {
 	[Header("Characters")]
 	[SerializeField] private Enemy enemy;
 	[SerializeField] private Player player;
+	[SerializeField] private Image playerImage;
+	[SerializeField] private Image enemyImage;
 
+
+	[SerializeField] private GalleryList listCard;
 	/// <summary>
 	/// Start is called on the frame when a script is enabled just before
 	/// any of the Update methods is called the first time.
@@ -41,6 +46,8 @@ public class GameplayManager : MonoBehaviour {
 
 		canvasOutputController.enemy = enemy;
 		canvasOutputController.player = player;
+
+		menuController.listCard = listCard.listItem;
 	}
 
 	void BindGenerator()
@@ -58,6 +65,7 @@ public class GameplayManager : MonoBehaviour {
 		enemy.canvasOutput = canvasOutputController;
 		enemy.audioController = audioOutputController;
 		enemy.menuController = menuController;
+		enemy.characterImage = enemyImage;
 
 		player.otherCharacter = enemy;
 		player.attackReceiver = enemy;
@@ -65,5 +73,6 @@ public class GameplayManager : MonoBehaviour {
 		player.canvasOutput = canvasOutputController;
 		player.audioController = audioOutputController;
 		player.menuController = menuController;
+		player.characterImage = playerImage;
 	}
 }

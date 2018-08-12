@@ -53,13 +53,9 @@ public class GalleryController : MonoBehaviour {
             sampleListItem.GetComponent<CharacterScript>().stat3 = list.listItem[i].Stat3;
             sampleListItem.GetComponent<CharacterScript>().stat4 = list.listItem[i].Stat4;
 
-            sampleListItem.GetComponent<CharacterScript>().pic1 = list.listItem[i].pic1;
-            sampleListItem.GetComponent<CharacterScript>().pic2 = list.listItem[i].pic2;
-            sampleListItem.GetComponent<CharacterScript>().pic3 = list.listItem[i].pic3;
-
-
-
-
+            sampleListItem.GetComponent<CharacterScript>().pic1 = list.listItem[i].pics[0];
+            sampleListItem.GetComponent<CharacterScript>().pic2 = list.listItem[i].pics[1];
+            sampleListItem.GetComponent<CharacterScript>().pic3 = list.listItem[i].pics[2];
         }
         //for (int i=0; i<item.Length;i++)
         //{

@@ -195,16 +195,6 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
     }
 
     // ----------------------------- Character interface methods --------------------------
-    public float ShowCharacterImage(Sprite CharacterSprite)
-    {
-        var sequence = DOTween.Sequence();
-        CharacterImage.sprite = CharacterSprite;
-        sequence.Append(CharacterImage.DOColor(Utilities.ChangeColorAlpha(CharacterImage.color, 1), 0.5f));
-        sequence.AppendInterval(ShowCharacterImageTime);
-        sequence.Append(CharacterImage.DOColor(Utilities.ChangeColorAlpha(CharacterImage.color, 0), 0.5f));
-        sequence.Play();
-        return sequence.Duration();
-    }
 
     public void ShowEnemyMana(float manaTimer)
     {
