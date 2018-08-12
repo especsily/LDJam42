@@ -195,7 +195,7 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
     }
 
     // ----------------------------- Character interface methods --------------------------
-    public void ShowCharacterImage(Sprite CharacterSprite)
+    public float ShowCharacterImage(Sprite CharacterSprite)
     {
         var sequence = DOTween.Sequence();
         CharacterImage.sprite = CharacterSprite;
@@ -203,6 +203,7 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
         sequence.AppendInterval(ShowCharacterImageTime);
         sequence.Append(CharacterImage.DOColor(Utilities.ChangeColorAlpha(CharacterImage.color, 0), 0.5f));
         sequence.Play();
+        return sequence.Duration();
     }
 
     public void ShowEnemyMana(float manaTimer)
@@ -240,5 +241,15 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
             DOTween.Complete(Camera.main);
             Camera.main.DOShakePosition(1f, 5, 10);
         });
+    }
+
+    public void SpaceEffect()
+    {
+        spaceBar.transform.DOScaleX(1.1f, 0.5f).SetLoops(2, LoopType.Yoyo);
+    }
+
+    public void SpaceResult(Color color)
+    {
+        spaceBar.GetComponent<Image>().DOColor(color, 0.5f).SetLoops(2, LoopType.Yoyo);
     }
 }

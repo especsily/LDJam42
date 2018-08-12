@@ -87,6 +87,7 @@
      <Compile Include="Assets\Libs\TextMesh Pro\Examples &amp; Extras\Scripts\VertexShakeB.cs" />
      <Compile Include="Assets\Libs\TextMesh Pro\Examples &amp; Extras\Scripts\VertexZoom.cs" />
      <Compile Include="Assets\Libs\TextMesh Pro\Examples &amp; Extras\Scripts\WarpTextExample.cs" />
+     <Compile Include="Assets\Scripts\Background\Cloud.cs" />
      <Compile Include="Assets\Scripts\DataModel\ComboConfig.cs" />
      <Compile Include="Assets\Scripts\DataModel\ListCombo.cs" />
      <Compile Include="Assets\Scripts\GameLogic\GameLogic.cs" />

@@ -23,7 +23,7 @@ public class Ball : MonoBehaviour {
 			rect.anchoredPosition += Vector2.left * speed * Time.deltaTime;
 			if(rect.anchoredPosition.x <= -spaceBarWidth/2)
 			{
-				rect.anchoredPosition = new Vector2(spaceBarWidth - Mathf.Abs(rect.anchoredPosition.x), 0);
+				rect.anchoredPosition = new Vector2(spaceBarWidth - Mathf.Abs(rect.anchoredPosition.x), rect.anchoredPosition.y);
 			}
 		}
 	}

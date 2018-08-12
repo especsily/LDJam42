@@ -28,21 +28,19 @@ public class Character : MonoBehaviour, IHealth
         //TO DO: EFFECT
         animator.SetBool("IsHit", false);
 
-        ShowCharacterImage(CharacterSprite);
+        StartCoroutine(ShowCharacterImage(CharacterSprite));
     }
 
 
-    private void ShowCharacterImage(Sprite CharacterSprite)
+    private IEnumerator ShowCharacterImage(Sprite CharacterSprite)
     {
+        float waitTime = 0;
         if (CharacterSprite != null)
         {
-            canvasOutput.ShowCharacterImage(CharacterSprite);
-            gameController.SetDelayGenerator(false);
+            waitTime = canvasOutput.ShowCharacterImage(CharacterSprite);
         }
-        else
-        {
-            gameController.SetDelayGenerator(false);
-        }
+        yield return new WaitForSeconds(waitTime);
+        gameController.SetDelayGenerator(false);
     }
 
     public void TakeDamage(int damage)

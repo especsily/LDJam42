@@ -66,7 +66,7 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
     {
         songPos = audioInfo.GetSongPosition() - offset;
 
-        if(songPos >= -3 && songPos <0)
+        if (songPos >= -4 && songPos < 0)
         {
             canvasOutputReceiver.DisplayCountDown(true, songPos);
         }
@@ -92,21 +92,10 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
             newNote.GetComponent<Note>().gameController = this;
         }
 
-        //test beat
-        // if (songPos >= (lastBeat + (crotchet * crotchetStep)))
-        // {
-        //     crotchetStep++;
-        //     //create note
-        //     if (!isPauseGen)
-        //     {
-        //         var newNote = generator.GenerateNote(bossType, new Vector3(canvasInfo.GetHalfInputPanelWidth(), 0, 0), noteSpeed, listCurrentNote, canvasInfo.GetComingPanelTransform());
-        //         newNote.GetComponent<Note>().gameController = this;
-        //     }
-        // }
-
         if (songPos >= (lastBeat + beatDuration))
         {
             lastBeat += beatDuration;
+            canvasOutputReceiver.SpaceEffect();
             Debug.Log("Beat!!!!!!");
         }
     }
@@ -193,7 +182,7 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
                 Color color = GetResultColor(result);
                 float multiplier = GetResultMultiplier(result);
 
-                int damage = Mathf.FloorToInt(multiplier * comboStack * pointPerCombo);     
+                int damage = Mathf.FloorToInt(multiplier * comboStack * pointPerCombo);
                 player.PlayerAttack();
 
                 //player attack
@@ -202,6 +191,7 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
                 ResetStackList(listStackNote);
                 ResetCurrentNoteList(listCurrentNote);
                 isPauseGen = true;
+                canvasOutputReceiver.SpaceResult(color);
 
                 spaceLeft--;
                 canvasOutputReceiver.DisplaySpaceLeft(false, spaceLeft);
@@ -224,7 +214,10 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
             if (IsInActivatorRange(activator, closestNote, distance) && closestNote.GetComponent<Note>().GetKey() == key)
             {
                 //TO DO: ANIMATION fade out
-                closestNote.GetComponent<Image>().DOColor(Utilities.ChangeColorAlpha(closestNote.GetComponent<Image>().color, 0), 0.5f);
+
+                ChangeButtonSprite(true, closestNote);
+                // closestNote.GetComponent<Image>().sprite = closestNote.GetComponent<Note>().ReturnActiveNote();
+                // closestNote.GetComponent<Image>().DOColor(Utilities.ChangeColorAlpha(closestNote.GetComponent<Image>().color, 0), 1f);
                 if (spaceLeft > 0)
                 {
                     comboStack++;
@@ -233,6 +226,7 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
             }
             else
             {
+                ChangeButtonSprite(false, closestNote);
                 if (spaceLeft > 0)
                 {
                     comboStack = 0;
@@ -242,12 +236,32 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
                 // ResetStackList(listStackNote);
             }
             listCurrentNote.Dequeue();
-            closestNote.gameObject.SetActive(false);
+            StartCoroutine(WaitForSeconds(0.25f, closestNote));
+            
         }
         else
         {
             return;
         }
+    }
+
+    private void ChangeButtonSprite(bool isTrue, GameObject closestNote)
+    {
+        closestNote.GetComponent<Image>().sprite = closestNote.GetComponent<Note>().ReturnActiveNote();
+        if (isTrue)
+        {
+            closestNote.GetComponent<Image>().DOColor(Utilities.ChangeColorAlpha(closestNote.GetComponent<Image>().color, 0), 0.25f);
+        }
+        else
+        {
+            closestNote.GetComponent<Image>().DOColor(Utilities.ChangeColorAlpha(Color.red, 0), 0.25f);
+        }
+    }
+
+    private IEnumerator WaitForSeconds(float waitTime, GameObject closestNote)
+    {
+        yield return new WaitForSeconds(waitTime);
+        closestNote.gameObject.SetActive(false);
     }
 
     // ------------------------------------ Note interface methods -------------------------------------

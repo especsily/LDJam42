@@ -13,4 +13,6 @@ public interface ICanvasOutputReceiver {
 	void DisplayRunningOut();
 	void DisplayEnemyAttack(int damage);
 	void DisplayCountDown(bool active, float time);
+	void SpaceEffect();
+	void SpaceResult(Color color);
 }

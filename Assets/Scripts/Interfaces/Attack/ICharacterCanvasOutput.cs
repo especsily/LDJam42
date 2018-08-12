@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public interface ICharacterCanvasOutput {
-	void ShowCharacterImage(Sprite CharacterSprite);
+	float ShowCharacterImage(Sprite CharacterSprite);
 	void ShowEnemyMana(float manaTimer);
 	void ShowEnemyHealth(float currentHP);
 	void ShowPlayerHealth(float currentHP);

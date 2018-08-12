@@ -12,6 +12,9 @@ public class Note : MonoBehaviour
     private bool isStacked = false;
     public IInputGiveup gameController;
 
+    [SerializeField] private Sprite activeNote;
+    [SerializeField] private Sprite deactiveNote;    
+
     public string GetKey()
     {
         return noteKey;
@@ -27,6 +30,15 @@ public class Note : MonoBehaviour
         this.noteSpeed = speed;
     }
 
+    public Sprite ReturnActiveNote()
+    {
+        return activeNote;
+    }
+    public Sprite ReturnDeactiveNote()
+    {
+        return deactiveNote;
+    }
+
     void Update()
     {
         if (!isStacked)
@@ -38,6 +50,7 @@ public class Note : MonoBehaviour
         {
             isStacked = true;
             gameController.AddToStackNote(this.gameObject);
+            GetComponent<Image>().sprite = deactiveNote;
         }
         if ((transform as RectTransform).anchoredPosition.x <= -gameController.GetMissLine() && !isMissed)
         {
