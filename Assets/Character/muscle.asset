@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e7743e3894c3e846928cb6f7ddb7fbd, type: 3}
+  m_Name: muscle
+  m_EditorClassIdentifier: 
+  Name: jhbdh
+  Stat1: sdjvb
+  Stat2: dhbfjhb
+  Stat3: djsb
+  Stat4: sjdb
+  pic1: {fileID: 21300012, guid: f8225f2e33f0c4d93ac00083386cb2c3, type: 3}
+  pic2: {fileID: 21300006, guid: f8225f2e33f0c4d93ac00083386cb2c3, type: 3}
+  pic3: {fileID: 21300002, guid: f8225f2e33f0c4d93ac00083386cb2c3, type: 3}
+  characterId: Boss3
