@@ -353,12 +353,6 @@
  <Reference Include="DOTweenProEditor">
  <HintPath>E:/Projects/LDJam42/Assets/Libs/Demigiant/DOTweenPro/Editor/DOTweenProEditor.dll</HintPath>
  </Reference>
- <Reference Include="Vectrosity">
- <HintPath>E:/Projects/LDJam42/Assets/Libs/Vectrosity/Plugins/Vectrosity.dll</HintPath>
- </Reference>
- <Reference Include="VectrosityEditor">
- <HintPath>E:/Projects/LDJam42/Assets/Libs/Vectrosity/Plugins/Editor/VectrosityEditor.dll</HintPath>
- </Reference>
  <Reference Include="UnityEditor.Advertisements">
  <HintPath>C:/Users/espec/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.ads@2.0.8/Editor/UnityEditor.Advertisements.dll</HintPath>
  </Reference>

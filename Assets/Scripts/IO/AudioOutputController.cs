@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AudioOutputController : MonoBehaviour, IAudioOutputReceiver, IAudioInfo
+public class AudioOutputController : MonoBehaviour, IAudioInfo, IAudioReceiver
 {
-    [SerializeField] private GameObject audioPlayerPrefab;
-
     private AudioSource mainThemeSource;
     private List<GameObject> audioPlayers;
+    private SoundManager soundManager;
 
 	[SerializeField] private AudioClip mainTheme;
     [SerializeField] private float bpm;
@@ -35,40 +34,18 @@ public class AudioOutputController : MonoBehaviour, IAudioOutputReceiver, IAudio
         mainThemeSource.Play();
     }
 
-    public void PlaySound(AudioClip sound)
-    {
-        //pool
-        bool needCreate = true;
-		GameObject player = null;
-        foreach (var audioPlayer in audioPlayers)
-        {
-            if (audioPlayer.activeSelf)
-            {
-                continue;
-            }
-            else
-            {
-                needCreate = false;
-				player = audioPlayer;
-                player.SetActive(true);
-            }
-        }
-
-        if (needCreate)
-        {
-			player = Instantiate(audioPlayerPrefab, Vector3.zero, Quaternion.identity, transform);
-        }
-        var audio = player.GetComponent<AudioSource>();
-        audio.clip = sound;
-        audio.Play();
-    }
-
     void Awake()
     {
         audioPlayers = new List<GameObject>();
         mainThemeSource = GetComponent<AudioSource>();
+        soundManager = GetComponent<SoundManager>();
         mainThemeSource.pitch = pitch;
         songDSPtime = (float)AudioSettings.dspTime;
 		PlayMainThemeSong(mainTheme);
+    }
+
+    public void PlaySound(string key)
+    {
+        soundManager.Play2DSFX(key);
     }
 }

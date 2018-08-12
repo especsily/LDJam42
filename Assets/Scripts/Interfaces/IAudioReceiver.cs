@@ -2,6 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface IAudioOutputReceiver {
-	void PlaySound(AudioClip sound);
+public interface IAudioReceiver {
+	void PlaySound(string key);
 }

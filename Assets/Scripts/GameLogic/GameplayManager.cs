@@ -33,8 +33,8 @@ public class GameplayManager : MonoBehaviour {
 
 	void BindOutput()
 	{
+		gameController.audioController = audioOutputController;
 		gameController.audioInfo = audioOutputController;
-		gameController.audioOutputReceiver = audioOutputController;
 		gameController.canvasInfo = canvasOutputController;
 		gameController.canvasOutputReceiver = canvasOutputController;
 

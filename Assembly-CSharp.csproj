@@ -53,7 +53,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\Dialogue.cs" />
      <Compile Include="Assets\Libs\Demigiant\DOTweenPro\DOTweenAnimation.cs" />
      <Compile Include="Assets\Libs\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01.cs" />
      <Compile Include="Assets\Libs\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01_UGUI.cs" />
@@ -123,6 +122,7 @@
      <Compile Include="Assets\Scripts\Background\Cloud.cs" />
      <Compile Include="Assets\Scripts\DataModel\ComboConfig.cs" />
      <Compile Include="Assets\Scripts\DataModel\ListCombo.cs" />
+     <Compile Include="Assets\Scripts\Dialogue.cs" />
      <Compile Include="Assets\Scripts\Gallery\CharacterScript.cs" />
      <Compile Include="Assets\Scripts\Gallery\GalleryController.cs" />
      <Compile Include="Assets\Scripts\Gallery\GalleryItem.cs" />
@@ -138,7 +138,7 @@
      <Compile Include="Assets\Scripts\Interfaces\Attack\IPlayerAttackReceiver.cs" />
      <Compile Include="Assets\Scripts\Interfaces\Attack\ISetGameController.cs" />
      <Compile Include="Assets\Scripts\Interfaces\IAudioInfo.cs" />
-     <Compile Include="Assets\Scripts\Interfaces\IAudioOutputReceiver.cs" />
+     <Compile Include="Assets\Scripts\Interfaces\IAudioReceiver.cs" />
      <Compile Include="Assets\Scripts\Interfaces\ICanvasInfo.cs" />
      <Compile Include="Assets\Scripts\Interfaces\ICanvasOutputReceiver.cs" />
      <Compile Include="Assets\Scripts\Interfaces\IGenerator.cs" />
@@ -159,6 +159,7 @@
      <Compile Include="Assets\Scripts\Models\Player.cs" />
      <Compile Include="Assets\Scripts\Utilities\AutoAnimDestroy.cs" />
      <Compile Include="Assets\Scripts\Utilities\Utilities.cs" />
+     <Compile Include="Assets\SoundManager\AudioKey.cs" />
      <None Include="Assets\Libs\Demigiant\DOTweenPro\readme.txt" />
      <None Include="Assets\Libs\TKLibs-master\Shaders\MaskShader.shader" />
      <None Include="Assets\Libs\TextMesh Pro\Resources\Shaders\TMP_SDF-Surface-Mobile.shader" />
@@ -417,9 +418,6 @@
  </Reference>
  <Reference Include="DOTweenPro">
  <HintPath>E:/Projects/LDJam42/Assets/Libs/Demigiant/DOTweenPro/DOTweenPro.dll</HintPath>
- </Reference>
- <Reference Include="Vectrosity">
- <HintPath>E:/Projects/LDJam42/Assets/Libs/Vectrosity/Plugins/Vectrosity.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.Analytics">
  <HintPath>C:/Users/espec/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.analytics@2.0.16/UnityEngine.Analytics.dll</HintPath>

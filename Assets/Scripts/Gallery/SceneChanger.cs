@@ -11,16 +11,17 @@ public class SceneChanger : MonoBehaviour {
 
     public void ChangeSceneToGallery()
     {
-        SceneManager.LoadScene(galleryScene);
+        TKSceneManager.ChangeScene(galleryScene);
     }
 
     public void ChangeSceneToGamePlay()
     {
-        SceneManager.LoadScene(gamePlayScene);
+        // TKSceneManager.ChangeScene(gamePlayScene);
+        Camera.main.GetComponent<CameraMasker>().MaskChangeScene(gamePlayScene);
     }
 
     public void ChangeSceneToStartScene()
     {
-        SceneManager.LoadScene(startScene);
+        TKSceneManager.ChangeScene(startScene);
     }
 }

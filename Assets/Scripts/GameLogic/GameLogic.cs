@@ -6,13 +6,14 @@ using System.Linq;
 using System;
 using DG.Tweening;
 
+
 public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAttackReceiver, ISetGameController
 {
     // -------------- Interfaces --------------
     public ICanvasOutputReceiver canvasOutputReceiver;
     public ICanvasInfo canvasInfo;
-    public IAudioOutputReceiver audioOutputReceiver;
     public IAudioInfo audioInfo;
+    public IAudioReceiver audioController;
     public IGenerator generator;
     public IPlayerAttack player;
 
@@ -60,6 +61,8 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
 
         noteSpeed = canvasInfo.GetHalfInputPanelWidth() / beatDuration;
         canvasOutputReceiver.DisplaySpaceLeft(true, spaceLeft);
+
+        
     }
 
     private void Update()
@@ -192,6 +195,9 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
                 ResetCurrentNoteList(listCurrentNote);
                 isPauseGen = true;
                 canvasOutputReceiver.SpaceResult(color);
+                
+                
+                audioController.PlaySound("mage_aaa");
 
                 spaceLeft--;
                 canvasOutputReceiver.DisplaySpaceLeft(false, spaceLeft);
@@ -213,11 +219,7 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
         {
             if (IsInActivatorRange(activator, closestNote, distance) && closestNote.GetComponent<Note>().GetKey() == key)
             {
-                //TO DO: ANIMATION fade out
-
                 ChangeButtonSprite(true, closestNote);
-                // closestNote.GetComponent<Image>().sprite = closestNote.GetComponent<Note>().ReturnActiveNote();
-                // closestNote.GetComponent<Image>().DOColor(Utilities.ChangeColorAlpha(closestNote.GetComponent<Image>().color, 0), 1f);
                 if (spaceLeft > 0)
                 {
                     comboStack++;
@@ -237,7 +239,6 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
             }
             listCurrentNote.Dequeue();
             StartCoroutine(WaitForSeconds(0.25f, closestNote));
-            
         }
         else
         {

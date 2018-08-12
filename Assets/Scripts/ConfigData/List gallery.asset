@@ -12,7 +12,16 @@ MonoBehaviour:
   m_Name: List gallery
   m_EditorClassIdentifier: 
   listItem:
-  - Name: snf
+  - Name: Knight-Chan
+    Stat1: fsfngn
+    Stat2: fjgenfng
+    Stat3: ondfno
+    Stat4: o;dfn
+    pic1: {fileID: 21300000, guid: f8225f2e33f0c4d93ac00083386cb2c3, type: 3}
+    pic2: {fileID: 21300002, guid: f8225f2e33f0c4d93ac00083386cb2c3, type: 3}
+    pic3: {fileID: 21300004, guid: f8225f2e33f0c4d93ac00083386cb2c3, type: 3}
+    characterId: 1
+  - Name: Witch-chan
     Stat1: fsfngn
     Stat2: fjgenfng
     Stat3: ondfno
@@ -21,21 +30,3 @@ MonoBehaviour:
     pic2: {fileID: 21300002, guid: f8225f2e33f0c4d93ac00083386cb2c3, type: 3}
     pic3: {fileID: 21300004, guid: f8225f2e33f0c4d93ac00083386cb2c3, type: 3}
     characterId: Main
-  - Name: 'dfbj '
-    Stat1: onidfdnbin
-    Stat2: nfigi;uqniudfiu
-    Stat3: ifgiuwfng
-    Stat4: dfiubi;uwod
-    pic1: {fileID: 21300008, guid: f8225f2e33f0c4d93ac00083386cb2c3, type: 3}
-    pic2: {fileID: 21300010, guid: f8225f2e33f0c4d93ac00083386cb2c3, type: 3}
-    pic3: {fileID: 21300012, guid: f8225f2e33f0c4d93ac00083386cb2c3, type: 3}
-    characterId: Boss1
-  - Name: weg
-    Stat1: fsgwd
-    Stat2: sdgw
-    Stat3: wdsgfd
-    Stat4: sdgwdg
-    pic1: {fileID: 21300008, guid: f8225f2e33f0c4d93ac00083386cb2c3, type: 3}
-    pic2: {fileID: 21300006, guid: f8225f2e33f0c4d93ac00083386cb2c3, type: 3}
-    pic3: {fileID: 21300010, guid: f8225f2e33f0c4d93ac00083386cb2c3, type: 3}
-    characterId: Boss2

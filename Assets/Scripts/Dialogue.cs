@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
-public class Dialogue : MonoBehaviour {
-
-    public Text dialogueText;
-    public Text characterNameDialogue;
+public class Dialogue : MonoBehaviour 
+{
+    public SceneChanger sceneManager;
+    public TMP_Text dialogueText;
+    public TMP_Text characterNameDialogue;
     public string[] sentences;
     private int index;
     public float typingSpeed;
@@ -45,8 +47,10 @@ public class Dialogue : MonoBehaviour {
         }
         else
         {
+            Debug.Log("fdasfda");
             dialogueText.text = "";
             continueButton.gameObject.SetActive(false);
+            sceneManager.ChangeSceneToGamePlay();
         }
     }
 }
