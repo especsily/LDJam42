@@ -7,8 +7,11 @@ using DG.Tweening;
 public class Character : MonoBehaviour, IHealth
 {
     //interfaces
-    public ISetGameController gameController;
+    public IMenuReceiver menuController;
+    public IAudioReceiver audioController;
+    public IGameController gameController;
     public ICharacterCanvasOutput canvasOutput;
+    public IHealth otherCharacter;
 
     [SerializeField] protected AudioClip AttackSounds, HurtSound, IdleSound;
     [SerializeField] protected float HurtAnimTime;
@@ -17,8 +20,6 @@ public class Character : MonoBehaviour, IHealth
     [SerializeField] protected int Damage;
     [SerializeField] protected Sprite FullImage, HalfImage, FinishImage;
     protected Animator animator;
-    protected AudioSource characterAudio;
-    // protected float animState = 0;
 
     private IEnumerator PlayHurtAnimation(Sprite CharacterSprite)
     {
@@ -57,10 +58,8 @@ public class Character : MonoBehaviour, IHealth
             }
             if (CurrentHP <= MaxHP * 0.2f)
             {
-                // CurrentHP = 0;
                 animator.SetInteger("State", 2);
                 CharacterSprite = FinishImage;
-                // Time.timeScale = 0;
             }
             if (CurrentHP <= 0)
             {
@@ -73,7 +72,8 @@ public class Character : MonoBehaviour, IHealth
                 else
                 {
                     //player
-                    Time.timeScale = 0;
+                    menuController.DisplayLosePanel(gameController.GetCurrentDealedDamage(), otherCharacter.GetCurrentHP());
+                    audioController.StopMainTheme();
                 }
             }
             StartCoroutine(PlayHurtAnimation(CharacterSprite));
@@ -104,7 +104,11 @@ public class Character : MonoBehaviour, IHealth
     void Start()
     {
         animator = GetComponent<Animator>();
-        characterAudio = GetComponent<AudioSource>();
         CurrentHP = MaxHP;
+    }
+
+    public float GetCurrentHP()
+    {
+        return CurrentHP;
     }
 }

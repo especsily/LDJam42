@@ -4,4 +4,5 @@ using UnityEngine;
 
 public interface IAudioReceiver {
 	void PlaySound(string key);
+	void StopMainTheme();
 }

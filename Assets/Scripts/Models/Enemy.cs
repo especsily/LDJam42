@@ -7,7 +7,6 @@ using TMPro;
 
 public class Enemy : Character, IPlayerAttackReceiver
 {
-    public IHealth player;
     public IEnemyAttackReceiver gameLogic;
     [SerializeField] private float AttackTime;
     private float manaTimer;
@@ -27,7 +26,7 @@ public class Enemy : Character, IPlayerAttackReceiver
             {
                 manaTimer = 0;
 				animator.SetTrigger("Attack");
-                player.TakeDamage(Damage);
+                otherCharacter.TakeDamage(Damage);
                 gameController.SetDelayGenerator(true);
 
                 DOTween.Complete(Camera.main);

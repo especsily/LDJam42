@@ -7,7 +7,7 @@ using System;
 using DG.Tweening;
 
 
-public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAttackReceiver, ISetGameController
+public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAttackReceiver, IGameController
 {
     // -------------- Interfaces --------------
     public ICanvasOutputReceiver canvasOutputReceiver;
@@ -46,6 +46,7 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
     [Header("Generator")]
     [SerializeField] private float GenTime;
     private float timer = 0;
+    private int stackDamage = 0;
     // private int crotchetStep = 1;
 
     private void Start()
@@ -186,6 +187,7 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
                 float multiplier = GetResultMultiplier(result);
 
                 int damage = Mathf.FloorToInt(multiplier * comboStack * pointPerCombo);
+                stackDamage += damage;
                 player.PlayerAttack();
 
                 //player attack
@@ -340,5 +342,10 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
     public GameObject GetEnemyAttackEffect()
     {
         return enemyAttackEffect;
+    }
+
+    public int GetCurrentDealedDamage()
+    {
+        return stackDamage;
     }
 }

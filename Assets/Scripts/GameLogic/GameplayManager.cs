@@ -8,6 +8,7 @@ public class GameplayManager : MonoBehaviour {
 	[SerializeField] private AudioOutputController audioOutputController;
 	[SerializeField] private CanvasOutputController canvasOutputController;
 	[SerializeField] private GameLogic gameController;
+	[SerializeField] private MenuController menuController;
 	[SerializeField] private Generator generator;
 
 	[Header("Characters")]
@@ -53,12 +54,16 @@ public class GameplayManager : MonoBehaviour {
 
 		enemy.gameLogic = gameController;
 		enemy.gameController = gameController;
-		enemy.player = player;
+		enemy.otherCharacter = player;
 		enemy.canvasOutput = canvasOutputController;
+		enemy.audioController = audioOutputController;
+		enemy.menuController = menuController;
 
-		player.enemy = enemy;
+		player.otherCharacter = enemy;
 		player.attackReceiver = enemy;
 		player.gameController = gameController;
 		player.canvasOutput = canvasOutputController;
+		player.audioController = audioOutputController;
+		player.menuController = menuController;
 	}
 }

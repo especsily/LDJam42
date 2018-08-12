@@ -48,4 +48,9 @@ public class AudioOutputController : MonoBehaviour, IAudioInfo, IAudioReceiver
     {
         soundManager.Play2DSFX(key);
     }
+
+    public void StopMainTheme()
+    {
+        mainThemeSource.Stop();
+    }
 }

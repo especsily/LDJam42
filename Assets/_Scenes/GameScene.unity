@@ -349,6 +349,7 @@ MonoBehaviour:
   audioOutputController: {fileID: 2008454122}
   canvasOutputController: {fileID: 942287314}
   gameController: {fileID: 25037271}
+  menuController: {fileID: 942287315}
   generator: {fileID: 1258025203}
   enemy: {fileID: 936372505}
   player: {fileID: 1845606999}
@@ -2737,7 +2738,7 @@ MonoBehaviour:
   IdleSound: {fileID: 0}
   HurtAnimTime: 1
   MaxHP: 1000000
-  Damage: 10
+  Damage: 50
   FullImage: {fileID: 21300000, guid: 2334443a7a6ff4349ada59f7b14f4ae7, type: 3}
   HalfImage: {fileID: 21300000, guid: dba3d9d1b7e7ad543a6a2eabe46cdf1d, type: 3}
   FinishImage: {fileID: 21300000, guid: 72ae01651d14e8a498748a91dc1a3405, type: 3}
@@ -2818,6 +2819,7 @@ GameObject:
   - component: {fileID: 942287311}
   - component: {fileID: 942287310}
   - component: {fileID: 942287314}
+  - component: {fileID: 942287315}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -2943,6 +2945,23 @@ MonoBehaviour:
   ManaTimer: {fileID: 631305}
   enemyHealth: {fileID: 1858651616}
   playerHealth: {fileID: 1775291750}
+--- !u!114 &942287315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 942287309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 945a06f1521c14147b2d2f467b091432, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  losePanel: {fileID: 738078684}
+  label: {fileID: 1871135730}
+  dealedDamageLabel: {fileID: 855074250}
+  bossHPLabel: {fileID: 874402478}
+  btnTryAgain: {fileID: 1580206203}
+  btnExit: {fileID: 257693273}
 --- !u!1 &1118209278
 GameObject:
   m_ObjectHideFlags: 0
