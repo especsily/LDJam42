@@ -1,17 +1,34 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System.Linq;
 using System;
+using DG.Tweening;
 
-public class GameLogic : MonoBehaviour, IInputReceiver
+public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAttackReceiver, ISetGameController
 {
-    [SerializeField] private ListCombo listCombo;
-    private List<Vector2Int> currentInputs;
+    // -------------- Interfaces --------------
     public ICanvasOutputReceiver canvasOutputReceiver;
+    public ICanvasInfo canvasInfo;
     public IAudioOutputReceiver audioOutputReceiver;
-    public IHeartRateOutputReceiver heartRateOutputReceiver;
     public IAudioInfo audioInfo;
+    public IGenerator generator;
+    public IPlayerAttack player;
+
+    [Header("Game controller")]
+    [SerializeField] private GameObject activator;
+    [SerializeField] private float missRange;
+    private List<GameObject> listStackNote;
+    private Queue<GameObject> listCurrentNote;
+    private int comboStack;
+    private float noteSpeed;
+    [SerializeField] private int spaceLeft;
+    [SerializeField] private float perMultiplier, goodMultiplier, coolMultiplier, badMultiplier;
+    [SerializeField] private float pointPerCombo;
+    [SerializeField] private int bossType;
+    private bool isPauseGen = false;
+    [SerializeField] private GameObject attack1Effect, attack2Effect, attack3Effect, enemyAttackEffect;
 
     [Header("Calculate beat!!!")]
     [SerializeField] private float missTime;
@@ -23,69 +40,64 @@ public class GameLogic : MonoBehaviour, IInputReceiver
     private float songPos; //current song pos
     private float lastBeat;
     private bool hasOffsetAdjusted = false;
-    private bool haveFinished = false;
-    private bool isMissed = false;
+    private bool hasNoteCreated = false;
 
+    [Header("Generator")]
+    [SerializeField] private float GenTime;
+    private float timer = 0;
+    // private int crotchetStep = 1;
 
     private void Start()
     {
-        currentInputs = new List<Vector2Int>();
+        listStackNote = new List<GameObject>();
+        listCurrentNote = new Queue<GameObject>();
+
+        comboStack = 0;
         lastBeat = 0;
         crotchet = 60 / audioInfo.GetBpm();
         beatDuration = crotchet * crotchetsPerSpace;
         offset += startCrotchet * crotchet;
+
+        noteSpeed = canvasInfo.GetHalfInputPanelWidth() / beatDuration;
+        canvasOutputReceiver.DisplaySpaceLeft(true, spaceLeft);
     }
 
     private void Update()
     {
         songPos = audioInfo.GetSongPosition() - offset;
+
+        if (songPos >= -4 && songPos < 0)
+        {
+            canvasOutputReceiver.DisplayCountDown(true, songPos);
+        }
+
         //start the song
-        if (songPos >= 0 && !hasOffsetAdjusted)
+        if (songPos >= 0)
         {
-            hasOffsetAdjusted = true;
-            heartRateOutputReceiver.SetBlipDuration(beatDuration);
-            heartRateOutputReceiver.StartBlip();
+            timer += Time.deltaTime;
+            if (!hasOffsetAdjusted)
+            {
+                hasOffsetAdjusted = true;
+                canvasOutputReceiver.MoveBall(canvasInfo.GetSpaceBarWidth() / beatDuration);
+                canvasOutputReceiver.DisplayCountDown(false, songPos);
+            }
+            else
+                canvasOutputReceiver.DisplaySongTime(audioInfo.GetSong().length - songPos);
         }
 
-        //test beat
-        if (songPos >= lastBeat + missTime 
-        && !haveFinished //check if you have finish
-        && !isMissed     //check if you missed the previous beat
-        && lastBeat!= 0) //not in the first beat
+        if (timer >= GenTime && !isPauseGen)
         {
-            isMissed = true;
-            haveFinished = false;
-            canvasOutputReceiver.DisplayFinish("Miss");
-            heartRateOutputReceiver.PerformBlip("Miss");
-
-            currentInputs = new List<Vector2Int>();
-            canvasOutputReceiver.DisplaySuggestCombo(new List<Vector2Int>());
-            canvasOutputReceiver.DisplayInputs(currentInputs);
-        }
-
-        if(songPos >= lastBeat + missTime + 0.1f && lastBeat != 0)
-        {
-            haveFinished = false;
+            timer = 0;
+            var newNote = generator.GenerateNote(bossType, new Vector3(canvasInfo.GetHalfInputPanelWidth(), 0, 0), noteSpeed, listCurrentNote, canvasInfo.GetComingPanelTransform());
+            newNote.GetComponent<Note>().gameController = this;
         }
 
         if (songPos >= (lastBeat + beatDuration))
         {
             lastBeat += beatDuration;
-            isMissed = false;
+            canvasOutputReceiver.SpaceEffect();
+            Debug.Log("Beat!!!!!!");
         }
-    }
-
-    private List<ComboConfig> GetAvailableCombos(List<Vector2Int> currentInputs, List<ComboConfig> listCombo)
-    {
-        return listCombo.FindAll(line =>
-        {
-            for (int i = 0; i < currentInputs.Count; i++)
-            {
-                if (currentInputs[i] != line.arrows[i]) return false;
-                if (currentInputs.Count > line.arrows.Count) return false;
-            }
-            return true;
-        });
     }
 
     private string CalculateResult(float songPos)
@@ -111,51 +123,221 @@ public class GameLogic : MonoBehaviour, IInputReceiver
         else if (timeOffset >= 0.1) result = "Cool";
         else if (timeOffset >= 0.05) result = "Good";
         else result = "Perfect";
-        heartRateOutputReceiver.PerformBlip(result);
+        // heartRateOutputReceiver.PerformBlip(result);
         return result;
+    }
+
+    private bool IsInActivatorRange(GameObject activator, GameObject closestNote, float distance)
+    {
+        if (distance <= (closestNote.transform as RectTransform).rect.width / 2 + (activator.transform as RectTransform).rect.width / 2)
+            return true;
+        return false;
+    }
+
+    private void ResetStackList(List<GameObject> listStackNote)
+    {
+        listStackNote.Clear();
+        canvasOutputReceiver.RemoveAllStackPanel();
+    }
+
+    private void ResetCurrentNoteList(Queue<GameObject> listCurrentNote)
+    {
+        canvasOutputReceiver.RemoveComingPanel();
+        listCurrentNote.Clear();
+    }
+
+    private Color GetResultColor(string result)
+    {
+        if (result == "Perfect") return Color.magenta;
+        else if (result == "Good") return Color.green;
+        else if (result == "Cool") return Color.cyan;
+        else if (result == "Bad") return Color.white;
+        else return Color.red;
+    }
+
+    private float GetResultMultiplier(string result)
+    {
+        if (result == "Perfect") return perMultiplier;
+        else if (result == "Good") return goodMultiplier;
+        else if (result == "Cool") return coolMultiplier;
+        else if (result == "Bad") return badMultiplier;
+        else return 0;
+    }
+
+    private float GetDistanceClosestNote(GameObject activator, GameObject closestNote)
+    {
+        return Mathf.Abs(((closestNote.transform as RectTransform).anchoredPosition - (activator.transform as RectTransform).anchoredPosition).magnitude);
     }
 
     // ------------------------------------ Input interface methods -------------------------------------
     public void OnUserFinish()
     {
-        haveFinished = true;
-        isMissed = false;
-        var combos = GetAvailableCombos(currentInputs, listCombo.listComboConfig);
-        var currentCombo = combos.Where(x => x.arrows.Count == currentInputs.Count).FirstOrDefault();
-        if (currentCombo == null)
+        if (hasOffsetAdjusted
+        && !isPauseGen
+        && lastBeat != 0)
         {
-            canvasOutputReceiver.DisplayFinish("Miss");
-            heartRateOutputReceiver.PerformBlip("Miss");
+            if (spaceLeft > 0)
+            {
+                string result = CalculateResult(songPos);
+                Color color = GetResultColor(result);
+                float multiplier = GetResultMultiplier(result);
+
+                int damage = Mathf.FloorToInt(multiplier * comboStack * pointPerCombo);
+                player.PlayerAttack();
+
+                //player attack
+                canvasOutputReceiver.DisplayPlayerAttack(result, color, comboStack, damage);
+                comboStack = 0;
+                ResetStackList(listStackNote);
+                ResetCurrentNoteList(listCurrentNote);
+                isPauseGen = true;
+                canvasOutputReceiver.SpaceResult(color);
+
+                spaceLeft--;
+                canvasOutputReceiver.DisplaySpaceLeft(false, spaceLeft);
+            }
+            else
+            {
+                spaceLeft = 0;
+                canvasOutputReceiver.DisplayRunningOut();
+            }
         }
-        else
-        {
-            canvasOutputReceiver.DisplayFinish(CalculateResult(songPos), currentCombo);
-        }
-        currentInputs = new List<Vector2Int>();
-        canvasOutputReceiver.DisplaySuggestCombo(new List<Vector2Int>());
-        canvasOutputReceiver.DisplayInputs(currentInputs);
     }
 
-    public void OnUserInput(Vector2Int arrow)
+    public void OnUserInput(string key)
     {
-        if (arrow == Vector2Int.up
-        || arrow == Vector2Int.right
-        || arrow == Vector2Int.down
-        || arrow == Vector2Int.left)
+        if (key == "" || listCurrentNote.Count == 0) return;
+        GameObject closestNote = listCurrentNote.ToList()[0];
+        float distance = GetDistanceClosestNote(activator, closestNote);
+        if (distance <= missRange)
         {
-            currentInputs.Add(arrow);
-        }
+            if (IsInActivatorRange(activator, closestNote, distance) && closestNote.GetComponent<Note>().GetKey() == key)
+            {
+                //TO DO: ANIMATION fade out
 
-        var combos = GetAvailableCombos(currentInputs, listCombo.listComboConfig);
-        if (combos.Count == 0)
-        {
-            currentInputs = new List<Vector2Int>();
-            canvasOutputReceiver.DisplaySuggestCombo(new List<Vector2Int>());
+                ChangeButtonSprite(true, closestNote);
+                // closestNote.GetComponent<Image>().sprite = closestNote.GetComponent<Note>().ReturnActiveNote();
+                // closestNote.GetComponent<Image>().DOColor(Utilities.ChangeColorAlpha(closestNote.GetComponent<Image>().color, 0), 1f);
+                if (spaceLeft > 0)
+                {
+                    comboStack++;
+                    canvasOutputReceiver.DisplayCombo(comboStack);
+                }
+            }
+            else
+            {
+                ChangeButtonSprite(false, closestNote);
+                if (spaceLeft > 0)
+                {
+                    comboStack = 0;
+                    canvasOutputReceiver.DisplayCombo(comboStack);
+                }
+                Camera.main.DOShakePosition(1f, 5f);
+                // ResetStackList(listStackNote);
+            }
+            listCurrentNote.Dequeue();
+            StartCoroutine(WaitForSeconds(0.25f, closestNote));
+            
         }
         else
         {
-            canvasOutputReceiver.DisplaySuggestCombo(combos.FirstOrDefault().arrows);
+            return;
         }
-        canvasOutputReceiver.DisplayInputs(currentInputs);
+    }
+
+    private void ChangeButtonSprite(bool isTrue, GameObject closestNote)
+    {
+        closestNote.GetComponent<Image>().sprite = closestNote.GetComponent<Note>().ReturnActiveNote();
+        if (isTrue)
+        {
+            closestNote.GetComponent<Image>().DOColor(Utilities.ChangeColorAlpha(closestNote.GetComponent<Image>().color, 0), 0.25f);
+        }
+        else
+        {
+            closestNote.GetComponent<Image>().DOColor(Utilities.ChangeColorAlpha(Color.red, 0), 0.25f);
+        }
+    }
+
+    private IEnumerator WaitForSeconds(float waitTime, GameObject closestNote)
+    {
+        yield return new WaitForSeconds(waitTime);
+        closestNote.gameObject.SetActive(false);
+    }
+
+    // ------------------------------------ Note interface methods -------------------------------------
+    public void AddToStackNote(GameObject note)
+    {
+        note.transform.SetParent(canvasInfo.GetStackTransform());
+        listStackNote.Add(note);
+
+        if (listStackNote.Count >= 5)
+        {
+            ResetStackList(listStackNote);
+            comboStack = 0;
+            canvasOutputReceiver.DisplayCombo(comboStack);
+            Camera.main.DOShakePosition(1f, 5f);
+        }
+    }
+
+    public float GetStackLine()
+    {
+        return -canvasInfo.GetHalfInputPanelWidth() + 64 * listStackNote.Count();
+    }
+
+    public float GetMissLine()
+    {
+        return missRange;
+    }
+
+    public void RemoveFromCurrentNote(GameObject note)
+    {
+        if (listCurrentNote.Contains(note))
+            listCurrentNote.Dequeue();
+    }
+
+
+    // ----------------------- Enemy Attack ---------------------------
+    public void ResetCombo()
+    {
+        ResetStackList(listStackNote);
+        ResetCurrentNoteList(listCurrentNote);
+        comboStack = 0;
+    }
+
+    public float GetSongPos()
+    {
+        return songPos;
+    }
+
+    public void DisplayDamage(int damage)
+    {
+        canvasOutputReceiver.DisplayEnemyAttack(damage);
+    }
+
+    // ----------------------- Game controller interface methods ------------------------
+    public void SetDelayGenerator(bool isDelay)
+    {
+        isPauseGen = isDelay;
+    }
+
+    public GameObject GetPlayerAttackEffect(int damage)
+    {
+        if (damage >= 500000)
+        {
+            return attack3Effect;
+        }
+        else if (damage >= 100000)
+        {
+            return attack2Effect;
+        }
+        else
+        {
+            return attack1Effect;
+        }
+    }
+
+    public GameObject GetEnemyAttackEffect()
+    {
+        return enemyAttackEffect;
     }
 }

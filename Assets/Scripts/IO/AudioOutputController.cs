@@ -21,7 +21,7 @@ public class AudioOutputController : MonoBehaviour, IAudioOutputReceiver, IAudio
 
     public float GetSongPosition()
     {
-		return (float)(AudioSettings.dspTime - songDSPtime);
+		return (float)(AudioSettings.dspTime - songDSPtime) * pitch;
     }
 
     public AudioClip GetSong()
@@ -67,8 +67,8 @@ public class AudioOutputController : MonoBehaviour, IAudioOutputReceiver, IAudio
     {
         audioPlayers = new List<GameObject>();
         mainThemeSource = GetComponent<AudioSource>();
-        songDSPtime = (float)AudioSettings.dspTime;
         mainThemeSource.pitch = pitch;
+        songDSPtime = (float)AudioSettings.dspTime;
 		PlayMainThemeSong(mainTheme);
     }
 }

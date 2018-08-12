@@ -1,96 +1,255 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
 
-
-public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver
+public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICanvasInfo, ICharacterCanvasOutput
 {
+    [Header("Text")]
     [SerializeField] private TMP_Text resultLabel;
-    [SerializeField] private TMP_Text skillNameLabel;
+    [SerializeField] private TMP_Text damageLabel;
+    [SerializeField] private TMP_Text comboLabel;
+    [SerializeField] private TMP_Text countDownLabel;
+    [SerializeField] private TMP_Text timeLabel;
+    [SerializeField] private TMP_Text runningOutLabel;
+
+    [Header("Input")]
+    //StackLine
+    [SerializeField] private RectTransform stackPanel;
+    [SerializeField] private RectTransform comingPanel;
     [SerializeField] private RectTransform inputPanel;
-    [SerializeField] private RectTransform suggestPanel;
-    [SerializeField] private GameObject arrowPrefab;
+    [SerializeField] private RectTransform spaceBar;
 
-    public void DisplayFinish(string result, ComboConfig combo = null)
+    [Header("Space bar")]
+    [SerializeField] private RectTransform ball;
+    [SerializeField] private RectTransform spaceLeftPanel;
+    [SerializeField] private GameObject spaceLeftPrefab;
+    private Sequence sequence;
+    private List<GameObject> spaceLeftList = new List<GameObject>();
+
+    [Header("Characters")]
+    [SerializeField] private float ShowCharacterImageTime;
+    [SerializeField] private Image CharacterImage;
+    [SerializeField] private TMP_Text ManaTimer;
+    [SerializeField] private Image enemyHealth;
+    [SerializeField] private Image playerHealth;
+    public IHealth enemy, player;
+
+    // --------------------------------- Display interface methods -------------------------------
+    public void DisplayCountDown(bool active, float time)
     {
-        resultLabel.text = result;
-        resultLabel.color = Utilities.ChangeColorAlpha(SwitchResultColor(result), 1);
-
-        DOTween.CompleteAll();
-        Sequence sequence = DOTween.Sequence();
-
-        if (combo != null)
+        if (active)
         {
-            skillNameLabel.text = combo.skillName;
-            skillNameLabel.color = Utilities.ChangeColorAlpha(skillNameLabel.color, 1);
-
-            sequence.Join(skillNameLabel.DOColor(Utilities.ChangeColorAlpha(skillNameLabel.color, 0), 2f));
-            sequence.Join(skillNameLabel.transform.DOScale(new Vector3(1.5f, 1.5f), 0.4f).SetLoops(2, LoopType.Yoyo));
+            countDownLabel.text = (int)Mathf.Abs(time) + "";
+            if (time >= -1)
+            {
+                countDownLabel.text = "Start";
+            }
         }
+        countDownLabel.gameObject.SetActive(active);
+    }
 
-        sequence.Join(resultLabel.DOColor(Utilities.ChangeColorAlpha(resultLabel.color, 0), 1f));
+    public void DisplayCombo(int combo)
+    {
+        DOTween.Complete(comboLabel);
+        comboLabel.text = "Combo X " + combo;
+        comboLabel.color = Utilities.ChangeColorAlpha(comboLabel.color, 1);
+        comboLabel.DOColor(Utilities.ChangeColorAlpha(comboLabel.color, 0), 1f);
+    }
+
+    public void DisplayPlayerAttack(string result, Color color, int comboStack, int damage)
+    {
+        //reset
+        DOTween.Complete(resultLabel);
+        DOTween.Complete(damageLabel);
+        sequence = DOTween.Sequence();
+
+        //display result
+        sequence.AppendCallback(() =>
+        {
+            resultLabel.text = result;
+            resultLabel.color = Utilities.ChangeColorAlpha(color, 1);
+
+            comboLabel.text = "Combo X " + comboStack;
+            comboLabel.color = Utilities.ChangeColorAlpha(comboLabel.color, 1);
+        });
+        sequence.Append(resultLabel.DOColor(Utilities.ChangeColorAlpha(resultLabel.color, 0), 1f));
+        sequence.Join(comboLabel.DOColor(Utilities.ChangeColorAlpha(comboLabel.color, 0), 1f));
+
+        //display damage
+        sequence.AppendCallback(() =>
+        {
+            damageLabel.text = damage.ToString();
+            damageLabel.color = Utilities.ChangeColorAlpha(Color.white, 1);
+        });
+        sequence.Append(damageLabel.DOColor(Utilities.ChangeColorAlpha(Color.red, 0), 2f));
+        sequence.Join(damageLabel.transform.DOLocalMoveY(0, 2f).From());
+
+        //TO DO: ANIMATION lose health
         sequence.Play();
-    }
-
-    public void DisplayInputs(List<Vector2Int> currentInputs)
-    {
-        DisplayComboToUI(currentInputs, inputPanel);
-    }
-
-    public void DisplaySuggestCombo(List<Vector2Int> suggestCombo)
-    {
-        DisplayComboToUI(suggestCombo, suggestPanel);
-    }
-
-    private void DisplayComboToUI(List<Vector2Int> combo, RectTransform panel)
-    {
-        if (combo.Count == 0)
+        sequence.OnStart(() => enemy.TakeDamage(damage));
+        sequence.OnComplete(() =>
         {
-            foreach (Transform child in panel)
+            DOTween.Complete(Camera.main);
+            Camera.main.DOShakePosition(1f, 5, 10);
+        });
+    }
+    public void DisplaySongTime(float time)
+    {
+        timeLabel.gameObject.SetActive(true);
+        timeLabel.text = Utilities.DisplayTime(time);
+    }
+
+    public void MoveBall(float speed)
+    {
+        ball.GetComponent<Ball>().speed = speed;
+        ball.GetComponent<Ball>().isStart = true;
+        ball.GetComponent<Ball>().spaceBarWidth = GetSpaceBarWidth();
+    }
+
+    public void RemoveAllStackPanel()
+    {
+        foreach (Transform child in stackPanel)
+        {
+            JumpAndFallAnimation(child);
+        }
+        // foreach (Transform child in stackPanel)
+        // {
+        //     Destroy(child.gameObject);
+        // }
+    }
+
+    private void JumpAndFallAnimation(Transform child)
+    {
+        var randomPosX = child.transform.localPosition.x + Random.Range(-200, 200);
+
+        child.transform.DOLocalJump(new Vector2(randomPosX, -1000), Random.Range(100, 200), 1, 1f)
+        .OnStart(() => child.SetParent(inputPanel));
+
+        child.gameObject.GetComponent<Image>().DOColor(Utilities.ChangeColorAlpha(child.gameObject.GetComponent<Image>().color, 0), 1f)
+        .OnComplete(() => Destroy(child.gameObject));
+    }
+
+    public void RemoveComingPanel()
+    {
+        foreach (Transform child in comingPanel)
+        {
+            Destroy(child.gameObject);
+        }
+    }
+
+    public void DisplaySpaceLeft(bool firstCreate, int spaceLeft)
+    {
+        if (firstCreate)
+        {
+            for (int i = 0; i < spaceLeft; i++)
             {
-                child.gameObject.SetActive(false);
+                var space = Instantiate(spaceLeftPrefab, Vector3.zero, Quaternion.identity, spaceLeftPanel);
+                spaceLeftList.Add(space);
             }
         }
-
-        //display arrows
-        for (int i = 0; i < combo.Count; i++)
+        else
         {
-            if (i < panel.childCount)
-            {
-                SwitchArrowDirection(panel.GetChild(i) as RectTransform, combo[i]);
-                panel.GetChild(i).gameObject.SetActive(true);
-            }
-            else
-            {
-                var newArrow = Instantiate(arrowPrefab, Vector3.zero, Quaternion.identity, panel);
-                SwitchArrowDirection(newArrow.transform as RectTransform, combo[i]);
-            }
+            spaceLeftList[spaceLeft].gameObject.SetActive(false);
         }
     }
 
-    private void SwitchArrowDirection(RectTransform arrowImage, Vector2Int arrowDirection)
+    public void DisplayRunningOut()
     {
-        if (arrowDirection == Vector2Int.up) arrowImage.rotation = Quaternion.Euler(0, 0, 90);
-        if (arrowDirection == Vector2Int.down) arrowImage.rotation = Quaternion.Euler(0, 0, -90);
-        if (arrowDirection == Vector2Int.left) arrowImage.rotation = Quaternion.Euler(0, 0, 180);
-        if (arrowDirection == Vector2Int.right) arrowImage.rotation = Quaternion.identity;
+        DOTween.Complete(runningOutLabel);
+        runningOutLabel.DOColor(Utilities.ChangeColorAlpha(runningOutLabel.color, 1), 0.5f).SetLoops(4, LoopType.Yoyo);
     }
 
-    private Color SwitchResultColor(string result)
+    // --------------------------------- Info interface methods -------------------------------
+    public float GetHalfInputPanelWidth()
     {
-        if (result == "Perfect")
-            return Color.magenta;
-        else if (result == "Good")
-            return Color.green;
-        else if (result == "Cool")
-            return Color.cyan;
-        else if (result == "Bad")
-            return Color.grey;
-        else if (result == "Miss")
-            return Color.red;
-        return Color.red;
+        return inputPanel.GetComponent<RectTransform>().rect.width / 2;
+    }
+
+    public RectTransform GetComingPanelTransform()
+    {
+        return comingPanel;
+    }
+
+    public float GetSpaceBarWidth()
+    {
+        return spaceBar.rect.width;
+    }
+
+    public RectTransform GetStackTransform()
+    {
+        return stackPanel;
+    }
+
+    public bool isFinishAnimation()
+    {
+        if (sequence == null)
+        {
+            return false;
+        }
+        else
+        {
+            return sequence.IsPlaying();
+        }
+    }
+
+    // ----------------------------- Character interface methods --------------------------
+    public float ShowCharacterImage(Sprite CharacterSprite)
+    {
+        var sequence = DOTween.Sequence();
+        CharacterImage.sprite = CharacterSprite;
+        sequence.Append(CharacterImage.DOColor(Utilities.ChangeColorAlpha(CharacterImage.color, 1), 0.5f));
+        sequence.AppendInterval(ShowCharacterImageTime);
+        sequence.Append(CharacterImage.DOColor(Utilities.ChangeColorAlpha(CharacterImage.color, 0), 0.5f));
+        sequence.Play();
+        return sequence.Duration();
+    }
+
+    public void ShowEnemyMana(float manaTimer)
+    {
+        ManaTimer.gameObject.SetActive(true);
+        ManaTimer.text = (int)manaTimer + "";
+    }
+
+    public void ShowEnemyHealth(float currentHP)
+    {
+        DOTween.To(() => enemyHealth.fillAmount, x => enemyHealth.fillAmount = x, currentHP, 0.5f);
+    }
+
+    public void ShowPlayerHealth(float currentHP)
+    {
+        DOTween.To(() => playerHealth.fillAmount, x => playerHealth.fillAmount = x, currentHP, 0.5f);
+    }
+
+    public void DisplayEnemyAttack(int damage)
+    {
+        DOTween.Complete(damageLabel);
+
+        var sequence = DOTween.Sequence();
+        sequence.AppendCallback(() =>
+        {
+            damageLabel.text = damage.ToString();
+            damageLabel.color = Utilities.ChangeColorAlpha(Color.white, 1);
+        });
+        sequence.Append(damageLabel.DOColor(Utilities.ChangeColorAlpha(Color.red, 0), 1f));
+        sequence.Join(damageLabel.transform.DOLocalMoveY(0, 1f).From());
+        sequence.Play();
+        sequence.OnStart(() => player.TakeDamage(damage));
+        sequence.OnComplete(() =>
+        {
+            DOTween.Complete(Camera.main);
+            Camera.main.DOShakePosition(1f, 5, 10);
+        });
+    }
+
+    public void SpaceEffect()
+    {
+        spaceBar.transform.DOScaleX(1.1f, 0.5f).SetLoops(2, LoopType.Yoyo);
+    }
+
+    public void SpaceResult(Color color)
+    {
+        spaceBar.GetComponent<Image>().DOColor(color, 0.5f).SetLoops(2, LoopType.Yoyo);
     }
 }
