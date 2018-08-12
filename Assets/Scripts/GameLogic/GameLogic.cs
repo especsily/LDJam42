@@ -4,10 +4,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 using System;
+using DG.Tweening;
 
-public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAttackReceiver
+public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAttackReceiver, ISetGameController
 {
-    //Interfaces
+    // -------------- Interfaces --------------
     public ICanvasOutputReceiver canvasOutputReceiver;
     public ICanvasInfo canvasInfo;
     public IAudioOutputReceiver audioOutputReceiver;
@@ -27,6 +28,7 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
     [SerializeField] private float pointPerCombo;
     [SerializeField] private int bossType;
     private bool isPauseGen = false;
+    [SerializeField] private GameObject attack1Effect, attack2Effect, attack3Effect, enemyAttackEffect;
 
     [Header("Calculate beat!!!")]
     [SerializeField] private float missTime;
@@ -40,6 +42,11 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
     private bool hasOffsetAdjusted = false;
     private bool hasNoteCreated = false;
 
+    [Header("Generator")]
+    [SerializeField] private float GenTime;
+    private float timer = 0;
+    // private int crotchetStep = 1;
+
     private void Start()
     {
         listStackNote = new List<GameObject>();
@@ -51,53 +58,56 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
         beatDuration = crotchet * crotchetsPerSpace;
         offset += startCrotchet * crotchet;
 
-        noteSpeed = canvasInfo.GetHalfInputPanelWidth() / crotchet / 2;
+        noteSpeed = canvasInfo.GetHalfInputPanelWidth() / beatDuration;
         canvasOutputReceiver.DisplaySpaceLeft(true, spaceLeft);
     }
 
     private void Update()
     {
         songPos = audioInfo.GetSongPosition() - offset;
-        isPauseGen = canvasInfo.isFinishAnimation();
+
+        if(songPos >= -3 && songPos <0)
+        {
+            canvasOutputReceiver.DisplayCountDown(true, songPos);
+        }
+
         //start the song
         if (songPos >= 0)
         {
+            timer += Time.deltaTime;
             if (!hasOffsetAdjusted)
             {
                 hasOffsetAdjusted = true;
-                canvasOutputReceiver.MoveBall(canvasInfo.GetSpaceBarWidth() / (beatDuration * 2));
-                // heartRateOutputReceiver.SetBlipDuration(beatDuration);
-                // heartRateOutputReceiver.StartBlip();
+                canvasOutputReceiver.MoveBall(canvasInfo.GetSpaceBarWidth() / beatDuration);
+                canvasOutputReceiver.DisplayCountDown(false, songPos);
             }
             else
                 canvasOutputReceiver.DisplaySongTime(audioInfo.GetSong().length - songPos);
         }
 
-        //test beat
-        if (songPos >= (lastBeat + crotchet) && !hasNoteCreated)
+        if (timer >= GenTime && !isPauseGen)
         {
-            hasNoteCreated = true;
-
-            //create note
-            if (!isPauseGen)
-            {
-                var newNote = generator.GenerateNote(bossType, new Vector3(canvasInfo.GetHalfInputPanelWidth(), 0, 0), noteSpeed, listCurrentNote, canvasInfo.GetComingPanelTransform());
-                newNote.GetComponent<Note>().gameController = this;
-            }
+            timer = 0;
+            var newNote = generator.GenerateNote(bossType, new Vector3(canvasInfo.GetHalfInputPanelWidth(), 0, 0), noteSpeed, listCurrentNote, canvasInfo.GetComingPanelTransform());
+            newNote.GetComponent<Note>().gameController = this;
         }
+
+        //test beat
+        // if (songPos >= (lastBeat + (crotchet * crotchetStep)))
+        // {
+        //     crotchetStep++;
+        //     //create note
+        //     if (!isPauseGen)
+        //     {
+        //         var newNote = generator.GenerateNote(bossType, new Vector3(canvasInfo.GetHalfInputPanelWidth(), 0, 0), noteSpeed, listCurrentNote, canvasInfo.GetComingPanelTransform());
+        //         newNote.GetComponent<Note>().gameController = this;
+        //     }
+        // }
 
         if (songPos >= (lastBeat + beatDuration))
         {
             lastBeat += beatDuration;
             Debug.Log("Beat!!!!!!");
-
-            //create note
-            if (!isPauseGen)
-            {
-                var newNote = generator.GenerateNote(bossType, new Vector3(canvasInfo.GetHalfInputPanelWidth(), 0, 0), noteSpeed, listCurrentNote, canvasInfo.GetComingPanelTransform());
-                newNote.GetComponent<Note>().gameController = this;
-            }
-            hasNoteCreated = false;
         }
     }
 
@@ -128,6 +138,25 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
         return result;
     }
 
+    private bool IsInActivatorRange(GameObject activator, GameObject closestNote, float distance)
+    {
+        if (distance <= (closestNote.transform as RectTransform).rect.width / 2 + (activator.transform as RectTransform).rect.width / 2)
+            return true;
+        return false;
+    }
+
+    private void ResetStackList(List<GameObject> listStackNote)
+    {
+        listStackNote.Clear();
+        canvasOutputReceiver.RemoveAllStackPanel();
+    }
+
+    private void ResetCurrentNoteList(Queue<GameObject> listCurrentNote)
+    {
+        canvasOutputReceiver.RemoveComingPanel();
+        listCurrentNote.Clear();
+    }
+
     private Color GetResultColor(string result)
     {
         if (result == "Perfect") return Color.magenta;
@@ -151,25 +180,6 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
         return Mathf.Abs(((closestNote.transform as RectTransform).anchoredPosition - (activator.transform as RectTransform).anchoredPosition).magnitude);
     }
 
-    private bool IsInActivatorRange(GameObject activator, GameObject closestNote, float distance)
-    {
-        if (distance <= (closestNote.transform as RectTransform).rect.width / 2 + (activator.transform as RectTransform).rect.width / 2)
-            return true;
-        return false;
-    }
-
-    private void ResetStackList(List<GameObject> listStackNote)
-    {
-        canvasOutputReceiver.RemoveAllStackPanel();
-        listStackNote.Clear();
-    }
-
-    private void ResetCurrentNoteList(Queue<GameObject> listCurrentNote)
-    {
-        canvasOutputReceiver.RemoveComingPanel();
-        listCurrentNote.Clear();
-    }
-
     // ------------------------------------ Input interface methods -------------------------------------
     public void OnUserFinish()
     {
@@ -183,10 +193,11 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
                 Color color = GetResultColor(result);
                 float multiplier = GetResultMultiplier(result);
 
-                int damage = Mathf.FloorToInt(multiplier * comboStack * pointPerCombo);
-                player.AttackEnemy(damage);
+                int damage = Mathf.FloorToInt(multiplier * comboStack * pointPerCombo);     
+                player.PlayerAttack();
 
-                canvasOutputReceiver.DisplayResult(result, color, comboStack, damage);
+                //player attack
+                canvasOutputReceiver.DisplayPlayerAttack(result, color, comboStack, damage);
                 comboStack = 0;
                 ResetStackList(listStackNote);
                 ResetCurrentNoteList(listCurrentNote);
@@ -213,13 +224,21 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
             if (IsInActivatorRange(activator, closestNote, distance) && closestNote.GetComponent<Note>().GetKey() == key)
             {
                 //TO DO: ANIMATION fade out
-                comboStack++;
-                canvasOutputReceiver.DisplayCombo(comboStack);
+                closestNote.GetComponent<Image>().DOColor(Utilities.ChangeColorAlpha(closestNote.GetComponent<Image>().color, 0), 0.5f);
+                if (spaceLeft > 0)
+                {
+                    comboStack++;
+                    canvasOutputReceiver.DisplayCombo(comboStack);
+                }
             }
             else
             {
-                comboStack = 0;
-                canvasOutputReceiver.DisplayCombo(comboStack);
+                if (spaceLeft > 0)
+                {
+                    comboStack = 0;
+                    canvasOutputReceiver.DisplayCombo(comboStack);
+                }
+                Camera.main.DOShakePosition(1f, 5f);
                 // ResetStackList(listStackNote);
             }
             listCurrentNote.Dequeue();
@@ -239,11 +258,16 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
 
         if (listStackNote.Count >= 5)
         {
-            //TO DO: ANIMATION rung.
             ResetStackList(listStackNote);
             comboStack = 0;
             canvasOutputReceiver.DisplayCombo(comboStack);
+            Camera.main.DOShakePosition(1f, 5f);
         }
+    }
+
+    public float GetStackLine()
+    {
+        return -canvasInfo.GetHalfInputPanelWidth() + 64 * listStackNote.Count();
     }
 
     public float GetMissLine()
@@ -264,5 +288,42 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
         ResetStackList(listStackNote);
         ResetCurrentNoteList(listCurrentNote);
         comboStack = 0;
+    }
+
+    public float GetSongPos()
+    {
+        return songPos;
+    }
+
+    public void DisplayDamage(int damage)
+    {
+        canvasOutputReceiver.DisplayEnemyAttack(damage);
+    }
+
+    // ----------------------- Game controller interface methods ------------------------
+    public void SetDelayGenerator(bool isDelay)
+    {
+        isPauseGen = isDelay;
+    }
+
+    public GameObject GetPlayerAttackEffect(int damage)
+    {
+        if (damage >= 500000)
+        {
+            return attack3Effect;
+        }
+        else if (damage >= 100000)
+        {
+            return attack2Effect;
+        }
+        else
+        {
+            return attack1Effect;
+        }
+    }
+
+    public GameObject GetEnemyAttackEffect()
+    {
+        return enemyAttackEffect;
     }
 }

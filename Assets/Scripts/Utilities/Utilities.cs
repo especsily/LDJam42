@@ -16,19 +16,4 @@ public class Utilities : MonoBehaviour
 	{
 		return new Color(color.r, color.g, color.b, a);
 	}
-
-    public Color SwitchResultColor(string result)
-    {
-        if (result == "Perfect")
-            return Color.magenta;
-        else if (result == "Good")
-            return Color.green;
-        else if (result == "Cool")
-            return Color.cyan;
-        else if (result == "Bad")
-            return Color.grey;
-        else if (result == "Miss")
-            return Color.red;
-        return Color.red;
-    }
 }

@@ -7,10 +7,9 @@ public class Player : Character, IPlayerAttack
     public IHealth enemy;
     public IPlayerAttackReceiver attackReceiver;
 
-    public void AttackEnemy(int damage)
+    public void PlayerAttack()
     {
-        enemy.TakeDamage(damage);
-        enemy.PlayHurtAnimation();
         attackReceiver.ResetManaBar();
+        animator.SetTrigger("Attack");
     }
 }

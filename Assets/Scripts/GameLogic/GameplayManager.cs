@@ -37,6 +37,9 @@ public class GameplayManager : MonoBehaviour {
 		gameController.audioOutputReceiver = audioOutputController;
 		gameController.canvasInfo = canvasOutputController;
 		gameController.canvasOutputReceiver = canvasOutputController;
+
+		canvasOutputController.enemy = enemy;
+		canvasOutputController.player = player;
 	}
 
 	void BindGenerator()
@@ -47,10 +50,15 @@ public class GameplayManager : MonoBehaviour {
 	void BindCharacter()
 	{
 		gameController.player = player;
+
 		enemy.gameLogic = gameController;
+		enemy.gameController = gameController;
 		enemy.player = player;
+		enemy.canvasOutput = canvasOutputController;
+
 		player.enemy = enemy;
 		player.attackReceiver = enemy;
+		player.gameController = gameController;
+		player.canvasOutput = canvasOutputController;
 	}
-	
 }

@@ -1,17 +1,16 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
 
-
-public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICanvasInfo
+public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICanvasInfo, ICharacterCanvasOutput
 {
     [Header("Text")]
     [SerializeField] private TMP_Text resultLabel;
     [SerializeField] private TMP_Text damageLabel;
     [SerializeField] private TMP_Text comboLabel;
+    [SerializeField] private TMP_Text countDownLabel;
     [SerializeField] private TMP_Text timeLabel;
     [SerializeField] private TMP_Text runningOutLabel;
 
@@ -29,7 +28,28 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
     private Sequence sequence;
     private List<GameObject> spaceLeftList = new List<GameObject>();
 
+    [Header("Characters")]
+    [SerializeField] private float ShowCharacterImageTime;
+    [SerializeField] private Image CharacterImage;
+    [SerializeField] private TMP_Text ManaTimer;
+    [SerializeField] private Image enemyHealth;
+    [SerializeField] private Image playerHealth;
+    public IHealth enemy, player;
+
     // --------------------------------- Display interface methods -------------------------------
+    public void DisplayCountDown(bool active, float time)
+    {
+        if (active)
+        {
+            countDownLabel.text = (int)Mathf.Abs(time) + "";
+            if (time >= -1)
+            {
+                countDownLabel.text = "Start";
+            }
+        }
+        countDownLabel.gameObject.SetActive(active);
+    }
+
     public void DisplayCombo(int combo)
     {
         DOTween.Complete(comboLabel);
@@ -38,7 +58,7 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
         comboLabel.DOColor(Utilities.ChangeColorAlpha(comboLabel.color, 0), 1f);
     }
 
-    public void DisplayResult(string result, Color color, int comboStack, int damage)
+    public void DisplayPlayerAttack(string result, Color color, int comboStack, int damage)
     {
         //reset
         DOTween.Complete(resultLabel);
@@ -63,14 +83,21 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
             damageLabel.text = damage.ToString();
             damageLabel.color = Utilities.ChangeColorAlpha(Color.white, 1);
         });
-        sequence.Append(damageLabel.DOColor(Utilities.ChangeColorAlpha(Color.red, 0), 1f));
-        sequence.Join(damageLabel.transform.DOLocalMoveY(0, 1f).From());
-        sequence.Append(Camera.main.DOShakePosition(1f, 5, 10));
+        sequence.Append(damageLabel.DOColor(Utilities.ChangeColorAlpha(Color.red, 0), 2f));
+        sequence.Join(damageLabel.transform.DOLocalMoveY(0, 2f).From());
+
         //TO DO: ANIMATION lose health
         sequence.Play();
+        sequence.OnStart(() => enemy.TakeDamage(damage));
+        sequence.OnComplete(() =>
+        {
+            DOTween.Complete(Camera.main);
+            Camera.main.DOShakePosition(1f, 5, 10);
+        });
     }
     public void DisplaySongTime(float time)
     {
+        timeLabel.gameObject.SetActive(true);
         timeLabel.text = Utilities.DisplayTime(time);
     }
 
@@ -85,8 +112,23 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
     {
         foreach (Transform child in stackPanel)
         {
-            Destroy(child.gameObject);
+            JumpAndFallAnimation(child);
         }
+        // foreach (Transform child in stackPanel)
+        // {
+        //     Destroy(child.gameObject);
+        // }
+    }
+
+    private void JumpAndFallAnimation(Transform child)
+    {
+        var randomPosX = child.transform.localPosition.x + Random.Range(-200, 200);
+
+        child.transform.DOLocalJump(new Vector2(randomPosX, -1000), Random.Range(100, 200), 1, 1f)
+        .OnStart(() => child.SetParent(inputPanel));
+
+        child.gameObject.GetComponent<Image>().DOColor(Utilities.ChangeColorAlpha(child.gameObject.GetComponent<Image>().color, 0), 1f)
+        .OnComplete(() => Destroy(child.gameObject));
     }
 
     public void RemoveComingPanel()
@@ -99,7 +141,7 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
 
     public void DisplaySpaceLeft(bool firstCreate, int spaceLeft)
     {
-        if(firstCreate)
+        if (firstCreate)
         {
             for (int i = 0; i < spaceLeft; i++)
             {
@@ -115,6 +157,7 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
 
     public void DisplayRunningOut()
     {
+        DOTween.Complete(runningOutLabel);
         runningOutLabel.DOColor(Utilities.ChangeColorAlpha(runningOutLabel.color, 1), 0.5f).SetLoops(4, LoopType.Yoyo);
     }
 
@@ -149,5 +192,53 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
         {
             return sequence.IsPlaying();
         }
+    }
+
+    // ----------------------------- Character interface methods --------------------------
+    public void ShowCharacterImage(Sprite CharacterSprite)
+    {
+        var sequence = DOTween.Sequence();
+        CharacterImage.sprite = CharacterSprite;
+        sequence.Append(CharacterImage.DOColor(Utilities.ChangeColorAlpha(CharacterImage.color, 1), 0.5f));
+        sequence.AppendInterval(ShowCharacterImageTime);
+        sequence.Append(CharacterImage.DOColor(Utilities.ChangeColorAlpha(CharacterImage.color, 0), 0.5f));
+        sequence.Play();
+    }
+
+    public void ShowEnemyMana(float manaTimer)
+    {
+        ManaTimer.gameObject.SetActive(true);
+        ManaTimer.text = (int)manaTimer + "";
+    }
+
+    public void ShowEnemyHealth(float currentHP)
+    {
+        DOTween.To(() => enemyHealth.fillAmount, x => enemyHealth.fillAmount = x, currentHP, 0.5f);
+    }
+
+    public void ShowPlayerHealth(float currentHP)
+    {
+        DOTween.To(() => playerHealth.fillAmount, x => playerHealth.fillAmount = x, currentHP, 0.5f);
+    }
+
+    public void DisplayEnemyAttack(int damage)
+    {
+        DOTween.Complete(damageLabel);
+
+        var sequence = DOTween.Sequence();
+        sequence.AppendCallback(() =>
+        {
+            damageLabel.text = damage.ToString();
+            damageLabel.color = Utilities.ChangeColorAlpha(Color.white, 1);
+        });
+        sequence.Append(damageLabel.DOColor(Utilities.ChangeColorAlpha(Color.red, 0), 1f));
+        sequence.Join(damageLabel.transform.DOLocalMoveY(0, 1f).From());
+        sequence.Play();
+        sequence.OnStart(() => player.TakeDamage(damage));
+        sequence.OnComplete(() =>
+        {
+            DOTween.Complete(Camera.main);
+            Camera.main.DOShakePosition(1f, 5, 10);
+        });
     }
 }

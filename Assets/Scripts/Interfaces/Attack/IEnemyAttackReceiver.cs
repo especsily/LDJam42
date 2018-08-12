@@ -4,4 +4,7 @@ using UnityEngine;
 
 public interface IEnemyAttackReceiver {
 	void ResetCombo();
+
+	float GetSongPos();
+	void DisplayDamage(int damage);
 }

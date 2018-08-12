@@ -6,44 +6,107 @@ using DG.Tweening;
 
 public class Character : MonoBehaviour, IHealth
 {
-    [SerializeField] protected Image HealthBar;
+    //interfaces
+    public ISetGameController gameController;
+    public ICharacterCanvasOutput canvasOutput;
+
+    [SerializeField] protected AudioClip AttackSounds, HurtSound, IdleSound;
+    [SerializeField] protected float HurtAnimTime;
     [SerializeField] protected float MaxHP;
     protected float CurrentHP;
     [SerializeField] protected int Damage;
-    [SerializeField] protected Sprite FullHPSprite, HalfHPSprite, ZeroHPSprite, FinishSprite;
+    [SerializeField] protected Sprite FullImage, HalfImage, FinishImage;
     protected Animator animator;
-    protected SpriteRenderer sr;
     protected AudioSource characterAudio;
-	protected float animState = 0;
+    // protected float animState = 0;
 
-    public void PlayHurtAnimation()
+    private IEnumerator PlayHurtAnimation(Sprite CharacterSprite)
     {
         //TO DO: Play sound and hurt animation
+        animator.SetBool("IsHit", true);
+        yield return new WaitForSeconds(HurtAnimTime);
+        //TO DO: EFFECT
+        animator.SetBool("IsHit", false);
+
+        ShowCharacterImage(CharacterSprite);
+    }
+
+
+    private void ShowCharacterImage(Sprite CharacterSprite)
+    {
+        if (CharacterSprite != null)
+        {
+            canvasOutput.ShowCharacterImage(CharacterSprite);
+            gameController.SetDelayGenerator(false);
+        }
+        else
+        {
+            gameController.SetDelayGenerator(false);
+        }
     }
 
     public void TakeDamage(int damage)
     {
-        float oldHP = CurrentHP;
-        CurrentHP -= damage;
-        if (CurrentHP <= MaxHP * 0.6f)
+        if (damage != 0)
         {
-			animator.SetInteger("State", 1);
+            CurrentHP -= damage;
+            Sprite CharacterSprite = null;
+
+            if (CurrentHP <= MaxHP * 0.6f)
+            {
+                animator.SetInteger("State", 1);
+                CharacterSprite = HalfImage;
+            }
+            if (CurrentHP <= MaxHP * 0.2f)
+            {
+                // CurrentHP = 0;
+                animator.SetInteger("State", 2);
+                CharacterSprite = FinishImage;
+                // Time.timeScale = 0;
+            }
+            if (CurrentHP <= 0)
+            {
+                CurrentHP = 0;
+                if (gameObject.GetComponent<Enemy>() != null)
+                {
+                    //enemy
+                    Time.timeScale = 0;
+                }
+                else
+                {
+                    //player
+                    Time.timeScale = 0;
+                }
+            }
+            StartCoroutine(PlayHurtAnimation(CharacterSprite));
+
+            GameObject effect = null;
+            if (gameObject.GetComponent<Enemy>() != null)
+            {
+                canvasOutput.ShowEnemyHealth(CurrentHP / MaxHP);
+                effect = gameController.GetPlayerAttackEffect(damage);
+                var newEffect = Instantiate(effect, Vector3.zero, Quaternion.identity, gameObject.transform);
+                newEffect.transform.localPosition = Vector3.zero;
+                gameObject.GetComponent<Enemy>().ResetManaBar();
+            }
+            if (gameObject.GetComponent<Player>() != null)
+            {
+                canvasOutput.ShowPlayerHealth(CurrentHP / MaxHP);
+                effect = gameController.GetEnemyAttackEffect();
+                var newEffect = Instantiate(effect, Vector3.zero, Quaternion.identity, gameObject.transform);
+                newEffect.transform.localPosition = new Vector3(0, -40, 0);
+            }
         }
-        if (CurrentHP <= MaxHP * 0.2f)
+        else
         {
-            // CurrentHP = 0;
-			animator.SetInteger("State", 2);
-            // Time.timeScale = 0;
+            gameController.SetDelayGenerator(false);
         }
-        DOTween.To(() => HealthBar.fillAmount, x => HealthBar.fillAmount = x, CurrentHP / MaxHP, 0.5f);
     }
 
     void Start()
     {
         animator = GetComponent<Animator>();
-        sr = GetComponent<SpriteRenderer>();
         characterAudio = GetComponent<AudioSource>();
         CurrentHP = MaxHP;
-        sr.sprite = FullHPSprite;
     }
 }
