@@ -19,7 +19,7 @@ public class Enemy : Character, IPlayerAttackReceiver
     void Update()
     {
 		//enemy attack
-        if (gameLogic.GetSongPos() > 0)
+        if (gameLogic.GetSongPos() > 0 && !gameLogic.IsComplete())
         {
             manaTimer += Time.deltaTime;
             if (manaTimer >= AttackTime)

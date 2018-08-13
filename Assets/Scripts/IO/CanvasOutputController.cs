@@ -157,8 +157,7 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
 
     public void DisplayRunningOut()
     {
-        DOTween.Complete(runningOutLabel);
-        runningOutLabel.DOColor(Utilities.ChangeColorAlpha(runningOutLabel.color, 1), 0.5f).SetLoops(4, LoopType.Yoyo);
+        runningOutLabel.DOColor(Utilities.ChangeColorAlpha(runningOutLabel.color, 1), 0.5f).SetLoops(-1, LoopType.Yoyo);
     }
 
     // --------------------------------- Info interface methods -------------------------------

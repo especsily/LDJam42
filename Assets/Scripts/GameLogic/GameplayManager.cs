@@ -48,6 +48,8 @@ public class GameplayManager : MonoBehaviour {
 		canvasOutputController.player = player;
 
 		menuController.listCard = listCard.listItem;
+		gameController.menuController = menuController;
+		gameController.enemy = enemy;
 	}
 
 	void BindGenerator()

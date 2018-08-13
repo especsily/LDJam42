@@ -16,6 +16,8 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
     public IAudioReceiver audioController;
     public IGenerator generator;
     public IPlayerAttack player;
+    public IMenuReceiver menuController;
+    public IHealth enemy;
 
     [Header("Game controller")]
     [SerializeField] private GameObject activator;
@@ -48,6 +50,7 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
     private float timer = 0;
     private int stackDamage = 0;
     // private int crotchetStep = 1;
+    private bool isComplete = false;
 
     private void Start()
     {
@@ -62,13 +65,12 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
 
         noteSpeed = canvasInfo.GetHalfInputPanelWidth() / beatDuration;
         canvasOutputReceiver.DisplaySpaceLeft(true, spaceLeft);
-
-        
     }
 
     private void Update()
     {
-        songPos = audioInfo.GetSongPosition() - offset;
+        if (!isComplete)
+            songPos = audioInfo.GetSongPosition() - offset;
 
         if (songPos >= -4 && songPos < 0)
         {
@@ -89,7 +91,7 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
                 canvasOutputReceiver.DisplaySongTime(audioInfo.GetSong().length - songPos);
         }
 
-        if (timer >= GenTime && !isPauseGen)
+        if (timer >= GenTime && !isPauseGen && !isComplete)
         {
             timer = 0;
             var newNote = generator.GenerateNote(bossType, new Vector3(canvasInfo.GetHalfInputPanelWidth(), 0, 0), noteSpeed, listCurrentNote, canvasInfo.GetComingPanelTransform());
@@ -101,6 +103,13 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
             lastBeat += beatDuration;
             canvasOutputReceiver.SpaceEffect();
             Debug.Log("Beat!!!!!!");
+        }
+
+        //lose because over time
+        if (songPos >= audioInfo.GetSong().length && !isComplete)
+        {
+            isComplete = true;
+            StartCoroutine(menuController.DisplayLosePanel(stackDamage, enemy.GetCurrentHP()));
         }
     }
 
@@ -197,19 +206,28 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
                 ResetCurrentNoteList(listCurrentNote);
                 isPauseGen = true;
                 canvasOutputReceiver.SpaceResult(color);
-                
-                
+
+
                 audioController.PlaySound("mage_aaa");
 
                 spaceLeft--;
-                canvasOutputReceiver.DisplaySpaceLeft(false, spaceLeft);
-            }
-            else
-            {
-                spaceLeft = 0;
-                canvasOutputReceiver.DisplayRunningOut();
+                if (spaceLeft != 0)
+                    canvasOutputReceiver.DisplaySpaceLeft(false, spaceLeft);
+                else
+                {
+                    canvasOutputReceiver.DisplayRunningOut();
+                    isComplete = true;
+                    isPauseGen = true;
+                    StartCoroutine(DelayLose(2f));
+                }
             }
         }
+    }
+
+    private IEnumerator DelayLose(float waitTime)
+    {
+        yield return new WaitForSeconds(waitTime);
+        StartCoroutine(menuController.DisplayLosePanel(stackDamage, enemy.GetCurrentHP()));
     }
 
     public void OnUserInput(string key)
@@ -240,7 +258,7 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
                 // ResetStackList(listStackNote);
             }
             listCurrentNote.Dequeue();
-            StartCoroutine(WaitForSeconds(0.25f, closestNote));
+            StartCoroutine(WaitForSeconds(0.1f, closestNote));
         }
         else
         {
@@ -347,5 +365,10 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
     public int GetCurrentDealedDamage()
     {
         return stackDamage;
+    }
+
+    public bool IsComplete()
+    {
+        return isComplete;
     }
 }

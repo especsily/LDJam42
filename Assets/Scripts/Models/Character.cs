@@ -13,7 +13,7 @@ public class Character : MonoBehaviour, IHealth
     public ICharacterCanvasOutput canvasOutput;
     public IHealth otherCharacter;
     [SerializeField] public Image characterImage;
-    [SerializeField] protected AudioClip AttackSounds, HurtSound, IdleSound;
+    [SerializeField] protected string[] hurtSound, attackSound;
     [SerializeField] protected float HurtAnimTime;
     [SerializeField] protected float MaxHP;
     protected float CurrentHP;

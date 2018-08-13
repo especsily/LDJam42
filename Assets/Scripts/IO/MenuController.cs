@@ -50,6 +50,8 @@ public class MenuController : MonoBehaviour, IMenuReceiver
 
     public IEnumerator DisplayLosePanel(int dealedDamage, float bossHP)
     {
+        Debug.Log("lose!!!");
+
         dealedDamageLabel.text = "Dealed damage : " + dealedDamage;
         bossHPLabel.text = "Boss HP Remaining : " + bossHP;
         yield return new WaitForSeconds(2f);
