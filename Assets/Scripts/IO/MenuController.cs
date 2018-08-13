@@ -116,7 +116,6 @@ public class MenuController : MonoBehaviour, IMenuReceiver
             sequence.AppendInterval(5f);
 
             sequence.Play();
-            sequence.OnComplete(() => TKSceneManager.ChangeScene("StartScene"));
         }
     }
 
@@ -124,7 +123,7 @@ public class MenuController : MonoBehaviour, IMenuReceiver
     {
         if (OnCardClicked)
         {
-            var currentBossID = PlayerPrefs.GetInt("CurrentBoss", 0);
+            var currentBossID = PlayerPrefs.GetInt("CurrentBoss", 1);
             currentBossID++;
             if (currentBossID >= listCard.Count)
             {
