@@ -18,9 +18,9 @@ MonoBehaviour:
     Stat3: ondfno
     Stat4: o;dfn
     pics:
-    - {fileID: 21300000, guid: 2334443a7a6ff4349ada59f7b14f4ae7, type: 3}
-    - {fileID: 21300000, guid: dba3d9d1b7e7ad543a6a2eabe46cdf1d, type: 3}
-    - {fileID: 21300000, guid: 72ae01651d14e8a498748a91dc1a3405, type: 3}
+    - {fileID: 21300000, guid: 2b129f62ef854614089e07d1d18a83d2, type: 3}
+    - {fileID: 21300000, guid: 12da5a900af35fb4387cedad3885f1ee, type: 3}
+    - {fileID: 21300000, guid: 9e5b33d0f6582c141b84498cf2090a40, type: 3}
     characterId: 1
   - Name: Witch-chan
     Stat1: fsfngn
@@ -28,7 +28,17 @@ MonoBehaviour:
     Stat3: ondfno
     Stat4: o;dfn
     pics:
-    - {fileID: 21300000, guid: 2334443a7a6ff4349ada59f7b14f4ae7, type: 3}
-    - {fileID: 21300000, guid: dba3d9d1b7e7ad543a6a2eabe46cdf1d, type: 3}
-    - {fileID: 21300000, guid: 72ae01651d14e8a498748a91dc1a3405, type: 3}
+    - {fileID: 21300000, guid: 0b481fbd36947b04eac0e819872126c0, type: 3}
+    - {fileID: 21300000, guid: 12da5a900af35fb4387cedad3885f1ee, type: 3}
+    - {fileID: 21300000, guid: 9e5b33d0f6582c141b84498cf2090a40, type: 3}
     characterId: 0
+  - Name: Holy-chan
+    Stat1: fsfngn
+    Stat2: fjgenfng
+    Stat3: ondfno
+    Stat4: o;dfn
+    pics:
+    - {fileID: 21300000, guid: 0b481fbd36947b04eac0e819872126c0, type: 3}
+    - {fileID: 21300000, guid: 12da5a900af35fb4387cedad3885f1ee, type: 3}
+    - {fileID: 21300000, guid: 9e5b33d0f6582c141b84498cf2090a40, type: 3}
+    characterId: 2
