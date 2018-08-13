@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using UnityEditor.Animations;
 
 public class Character : MonoBehaviour, IHealth
 {
@@ -11,14 +12,19 @@ public class Character : MonoBehaviour, IHealth
     public IAudioReceiver audioController;
     public IGameController gameController;
     public ICharacterCanvasOutput canvasOutput;
-    public IHealth otherCharacter;
+    [HideInInspector] public Character otherCharacter;
     [SerializeField] public Image characterImage;
-    [SerializeField] protected string[] hurtSound, attackSound;
-    [SerializeField] protected float HurtAnimTime;
-    [SerializeField] protected float MaxHP;
+    [SerializeField] protected float HurtAnimTime = 1;
+
+    //bind info
+    [HideInInspector] public float MaxHP;
+    [HideInInspector] public int Damage;
+    [HideInInspector] public Sprite HalfImage, FinishImage;
+    [HideInInspector] public GameObject[] AttackEffect;
+    [HideInInspector] public string[] hurtSound, attackSound;
+    [HideInInspector] public AnimatorController animatorController;
+
     protected float CurrentHP;
-    [SerializeField] protected int Damage;
-    [SerializeField] protected Sprite FullImage, HalfImage, FinishImage;
     protected Animator animator;
 
     private IEnumerator PlayHurtAnimation(Sprite CharacterSprite)
@@ -37,6 +43,8 @@ public class Character : MonoBehaviour, IHealth
     {
         if (CharacterSprite != null)
         {
+            characterImage.sprite = CharacterSprite;
+            
             var sequence = DOTween.Sequence();
             sequence.Append(characterImage.DOColor(Utilities.ChangeColorAlpha(characterImage.color, 1), 0.5f));
             sequence.AppendInterval(1f);
@@ -67,7 +75,12 @@ public class Character : MonoBehaviour, IHealth
                 animator.SetInteger("State", 2);
                 CharacterSprite = FinishImage;
             }
+
             StartCoroutine(PlayHurtAnimation(CharacterSprite));
+            if (hurtSound.Length != 0)
+            {
+                audioController.PlaySound(hurtSound.RandomItem());
+            }
 
             if (CurrentHP <= 0)
             {
@@ -112,6 +125,7 @@ public class Character : MonoBehaviour, IHealth
     {
         animator = GetComponent<Animator>();
         CurrentHP = MaxHP;
+        animator.runtimeAnimatorController = animatorController;
     }
 
     public float GetCurrentHP()

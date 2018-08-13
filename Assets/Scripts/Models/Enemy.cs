@@ -8,7 +8,7 @@ using TMPro;
 public class Enemy : Character, IPlayerAttackReceiver
 {
     public IEnemyAttackReceiver gameLogic;
-    [SerializeField] private float AttackTime;
+    [HideInInspector] public float AttackTime;
     private float manaTimer;
 
     public void ResetManaBar()

@@ -35,12 +35,16 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
     [SerializeField] private Image enemyHealth;
     [SerializeField] private Image playerHealth;
     public IHealth enemy, player;
+    public IAudioReceiver audioController;
+    private int nextTime = -4;
 
     // --------------------------------- Display interface methods -------------------------------
     public void DisplayCountDown(bool active, float time)
     {
-        if (active)
+        if (active && time >= nextTime)
         {
+            nextTime++;
+            audioController.PlaySound("count_down");
             countDownLabel.text = (int)Mathf.Abs(time) + "";
             if (time >= -1)
             {
@@ -68,6 +72,7 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
         //display result
         sequence.AppendCallback(() =>
         {
+            PlayResultSpaceSound(result);   
             resultLabel.text = result;
             resultLabel.color = Utilities.ChangeColorAlpha(color, 1);
 
@@ -88,9 +93,8 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
 
         //TO DO: ANIMATION lose health
         sequence.Play();
-        sequence.OnStart(() => enemy.TakeDamage(damage));
-        sequence.OnComplete(() =>
-        {
+        sequence.OnStart(() => {
+            enemy.TakeDamage(damage);
             DOTween.Complete(Camera.main);
             Camera.main.DOShakePosition(1f, 5, 10);
         });
@@ -120,6 +124,15 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
         // }
     }
 
+    private void PlayResultSpaceSound(string result)
+    {
+        if (result == "Perfect") audioController.PlaySound("space_perfect");
+        else if (result == "Good") audioController.PlaySound("space_perfect");
+        else if (result == "Cool") audioController.PlaySound("space_perfect");
+        else if (result == "Bad") audioController.PlaySound("space_perfect");
+        else audioController.PlaySound("space_miss");
+    }
+
     private void JumpAndFallAnimation(Transform child)
     {
         var randomPosX = child.transform.localPosition.x + Random.Range(-200, 200);
@@ -135,7 +148,8 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
     {
         foreach (Transform child in comingPanel)
         {
-            Destroy(child.gameObject);
+            child.gameObject.GetComponent<Image>().DOColor(Utilities.ChangeColorAlpha(child.gameObject.GetComponent<Image>().color, 0), 1f).OnComplete(() => Destroy(child.gameObject));
+            child.DOMoveY(-250f, 1f);
         }
     }
 
@@ -224,9 +238,8 @@ public class CanvasOutputController : MonoBehaviour, ICanvasOutputReceiver, ICan
         sequence.Append(damageLabel.DOColor(Utilities.ChangeColorAlpha(Color.red, 0), 1f));
         sequence.Join(damageLabel.transform.DOLocalMoveY(0, 1f).From());
         sequence.Play();
-        sequence.OnStart(() => player.TakeDamage(damage));
-        sequence.OnComplete(() =>
-        {
+        sequence.OnStart(() => {
+            player.TakeDamage(damage);
             DOTween.Complete(Camera.main);
             Camera.main.DOShakePosition(1f, 5, 10);
         });

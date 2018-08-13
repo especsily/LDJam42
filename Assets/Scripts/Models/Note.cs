@@ -46,12 +46,19 @@ public class Note : MonoBehaviour
             (transform as RectTransform).anchoredPosition += Vector2.left * noteSpeed * Time.deltaTime;
         }
 
-        if ((transform as RectTransform).anchoredPosition.x <= gameController.GetStackLine())
+        // if ((transform as RectTransform).anchoredPosition.x <= gameController.GetStackLine() + 32)
+        // {
+        //     (transform as RectTransform).anchoredPosition = new Vector2(gameController.GetStackLine()+ 32, (transform as RectTransform).anchoredPosition.y);
+        // }
+
+        if ((transform as RectTransform).anchoredPosition.x <= gameController.GetStackLine() +16)
         {
+            (transform as RectTransform).anchoredPosition = new Vector2(gameController.GetStackLine()+16, (transform as RectTransform).anchoredPosition.y);
             isStacked = true;
             gameController.AddToStackNote(this.gameObject);
             GetComponent<Image>().sprite = deactiveNote;
         }
+
         if ((transform as RectTransform).anchoredPosition.x <= -gameController.GetMissLine() && !isMissed)
         {
 			isMissed = true;

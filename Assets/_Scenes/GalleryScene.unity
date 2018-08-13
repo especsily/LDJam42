@@ -503,7 +503,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 300
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1151,7 +1151,7 @@ Canvas:
   m_RenderMode: 1
   m_Camera: {fileID: 519420031}
   m_PlaneDistance: 100
-  m_PixelPerfect: 0
+  m_PixelPerfect: 1
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
@@ -1219,7 +1219,7 @@ GameObject:
   - component: {fileID: 907958942}
   - component: {fileID: 907958941}
   m_Layer: 0
-  m_Name: ScenceControl
+  m_Name: ScenceController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1625,7 +1625,7 @@ GameObject:
   - component: {fileID: 1244208793}
   - component: {fileID: 1244208794}
   m_Layer: 0
-  m_Name: GalleryControll
+  m_Name: GalleryController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

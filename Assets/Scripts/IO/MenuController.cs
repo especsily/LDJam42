@@ -108,7 +108,7 @@ public class MenuController : MonoBehaviour, IMenuReceiver
             sequence.Append(cardBack.transform.DOScaleX(0, 1));
             sequence.AppendCallback(() =>
             {
-                var currentCharacter = listCard.Where(x => x.characterId == currentBossID || x.characterId == 0).FirstOrDefault();
+                var currentCharacter = listCard.Where(x => x.charId == currentBossID || x.charId == 0).FirstOrDefault();
                 var rand = Random.Range(0, currentCharacter.pics.Count);
                 Debug.Log(rand);
                 cardBack.sprite = currentCharacter.pics[rand];

@@ -47,11 +47,11 @@ public class GalleryController : MonoBehaviour {
         for (int i = 0; i < list.listItem.Count; i++)
         {
             GameObject sampleListItem = Instantiate(characterSelect, parent.transform);
-            sampleListItem.GetComponent<CharacterScript>().nameText = list.listItem[i].Name;
-            sampleListItem.GetComponent<CharacterScript>().stat1 = list.listItem[i].Stat1;
-            sampleListItem.GetComponent<CharacterScript>().stat2 = list.listItem[i].Stat2;
-            sampleListItem.GetComponent<CharacterScript>().stat3 = list.listItem[i].Stat3;
-            sampleListItem.GetComponent<CharacterScript>().stat4 = list.listItem[i].Stat4;
+            // sampleListItem.GetComponent<CharacterScript>().nameText = list.listItem[i].Name;
+            // sampleListItem.GetComponent<CharacterScript>().stat1 = list.listItem[i].Stat1;
+            // sampleListItem.GetComponent<CharacterScript>().stat2 = list.listItem[i].Stat2;
+            // sampleListItem.GetComponent<CharacterScript>().stat3 = list.listItem[i].Stat3;
+            // sampleListItem.GetComponent<CharacterScript>().stat4 = list.listItem[i].Stat4;
 
             sampleListItem.GetComponent<CharacterScript>().pic1 = list.listItem[i].pics[0];
             sampleListItem.GetComponent<CharacterScript>().pic2 = list.listItem[i].pics[1];

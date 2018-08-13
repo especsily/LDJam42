@@ -30,8 +30,8 @@ public class StartMenu : MonoBehaviour
     {
         yield return new WaitForSeconds(0.8f);
         rapier.gameObject.SetActive(true);
-        rapier.transform.DOMoveX(-600f, 1f).From();
-        yield return new WaitForSeconds(1f);
+        rapier.transform.DOMoveX(-600f, 0.3f).From();
+        yield return new WaitForSeconds(0.3f);
 
         hLazer.gameObject.SetActive(true);
         // yield return new WaitForSeconds(hLazer.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).length);

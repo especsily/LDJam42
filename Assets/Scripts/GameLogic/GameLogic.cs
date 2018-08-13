@@ -15,9 +15,9 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
     public IAudioInfo audioInfo;
     public IAudioReceiver audioController;
     public IGenerator generator;
-    public IPlayerAttack player;
+    public Enemy enemy;
+    public Player player;
     public IMenuReceiver menuController;
-    public IHealth enemy;
 
     [Header("Game controller")]
     [SerializeField] private GameObject activator;
@@ -31,7 +31,6 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
     [SerializeField] private float pointPerCombo;
     [SerializeField] private int bossType;
     private bool isPauseGen = false;
-    [SerializeField] private GameObject attack1Effect, attack2Effect, attack3Effect, enemyAttackEffect;
 
     [Header("Calculate beat!!!")]
     [SerializeField] private float missTime;
@@ -127,8 +126,6 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
             var nextBeat = lastBeat + beatDuration;
             timeOffset = Mathf.Abs(nextBeat - songPos);
         }
-
-        Debug.Log(timeOffset);
         //return result
         string result = "";
         if (timeOffset >= missTime) result = "Miss";
@@ -136,7 +133,6 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
         else if (timeOffset >= 0.1) result = "Cool";
         else if (timeOffset >= 0.05) result = "Good";
         else result = "Perfect";
-        // heartRateOutputReceiver.PerformBlip(result);
         return result;
     }
 
@@ -155,8 +151,8 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
 
     private void ResetCurrentNoteList(Queue<GameObject> listCurrentNote)
     {
-        canvasOutputReceiver.RemoveComingPanel();
         listCurrentNote.Clear();
+        canvasOutputReceiver.RemoveComingPanel();
     }
 
     private Color GetResultColor(string result)
@@ -200,6 +196,7 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
                 player.PlayerAttack();
 
                 //player attack
+                audioController.PlaySound("space_click");
                 canvasOutputReceiver.DisplayPlayerAttack(result, color, comboStack, damage);
                 comboStack = 0;
                 ResetStackList(listStackNote);
@@ -207,19 +204,15 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
                 isPauseGen = true;
                 canvasOutputReceiver.SpaceResult(color);
 
-
-                audioController.PlaySound("mage_aaa");
-
                 spaceLeft--;
-                if (spaceLeft != 0)
-                    canvasOutputReceiver.DisplaySpaceLeft(false, spaceLeft);
-                else
+                if (spaceLeft == 0)
                 {
                     canvasOutputReceiver.DisplayRunningOut();
                     isComplete = true;
                     isPauseGen = true;
                     StartCoroutine(DelayLose(2f));
                 }
+                canvasOutputReceiver.DisplaySpaceLeft(false, spaceLeft);
             }
         }
     }
@@ -239,6 +232,7 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
         {
             if (IsInActivatorRange(activator, closestNote, distance) && closestNote.GetComponent<Note>().GetKey() == key)
             {
+                audioController.PlaySound("arrow_click");
                 ChangeButtonSprite(true, closestNote);
                 if (spaceLeft > 0)
                 {
@@ -248,6 +242,7 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
             }
             else
             {
+                audioController.PlaySound("arrow_miss");
                 ChangeButtonSprite(false, closestNote);
                 if (spaceLeft > 0)
                 {
@@ -341,25 +336,18 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
         isPauseGen = isDelay;
     }
 
-    public GameObject GetPlayerAttackEffect(int damage)
+    public GameObject GetEnemyAttackEffect()
     {
-        if (damage >= 500000)
+        if (enemy.AttackEffect.Length != 0)
         {
-            return attack3Effect;
-        }
-        else if (damage >= 100000)
-        {
-            return attack2Effect;
+            var rnd = UnityEngine.Random.Range(0, enemy.AttackEffect.Length);
+            audioController.PlaySound(enemy.attackSound[rnd]);
+            return enemy.AttackEffect[rnd];
         }
         else
         {
-            return attack1Effect;
+            return null;
         }
-    }
-
-    public GameObject GetEnemyAttackEffect()
-    {
-        return enemyAttackEffect;
     }
 
     public int GetCurrentDealedDamage()
@@ -370,5 +358,24 @@ public class GameLogic : MonoBehaviour, IInputReceiver, IInputGiveup, IEnemyAtta
     public bool IsComplete()
     {
         return isComplete;
+    }
+
+    public GameObject GetPlayerAttackEffect(int damage)
+    {
+        if (damage >= 500000)
+        {
+            audioController.PlaySound(player.attackSound[2]);
+            return player.AttackEffect[2];
+        }
+        else if (damage >= 100000)
+        {
+            audioController.PlaySound(player.attackSound[1]);
+            return player.AttackEffect[1];
+        }
+        else
+        {
+            audioController.PlaySound(player.attackSound[0]);
+            return player.AttackEffect[0];
+        }
     }
 }

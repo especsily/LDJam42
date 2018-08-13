@@ -12,33 +12,53 @@ MonoBehaviour:
   m_Name: List gallery
   m_EditorClassIdentifier: 
   listItem:
-  - Name: Knight-Chan
-    Stat1: fsfngn
-    Stat2: fjgenfng
-    Stat3: ondfno
-    Stat4: o;dfn
+  - charId: 0
+    charName: Knight-Chan
+    charBirthday: 8/8/2000
+    charSize: 88 - 59 - 93
+    charInterest: Collecting clothes, touching soft skin
     pics:
-    - {fileID: 21300000, guid: 2b129f62ef854614089e07d1d18a83d2, type: 3}
-    - {fileID: 21300000, guid: 12da5a900af35fb4387cedad3885f1ee, type: 3}
-    - {fileID: 21300000, guid: 9e5b33d0f6582c141b84498cf2090a40, type: 3}
-    characterId: 1
-  - Name: Witch-chan
-    Stat1: fsfngn
-    Stat2: fjgenfng
-    Stat3: ondfno
-    Stat4: o;dfn
+    - {fileID: 21300000, guid: 12481ff3e8939354ea6729771a774881, type: 3}
+    - {fileID: 21300000, guid: 2d0a58239ac436c4382f4998667fc1c2, type: 3}
+    - {fileID: 21300000, guid: 1c65752796101ad4cb506e59f9838c97, type: 3}
+    hurtSound:
+    - player_hurt_1
+    - player_hurt_2
+    - player_hurt_3
+    attackSound:
+    - player_atk_1
+    - player_atk_2
+    - player_atk_3
+    MaxHP: 100
+    Damage: 0
+    charAnimator: {fileID: 9100000, guid: 95e0a70e16261a143905313d697a9517, type: 2}
+    AttackTime: 0
+    halfImage: {fileID: 21300000, guid: d87396daf52204148be6cbbe17f2f461, type: 3}
+    finishImage: {fileID: 21300000, guid: 8bb309f74b793e24695a66c66b49b9a3, type: 3}
+    AttackEffect:
+    - {fileID: 1327219137352138, guid: 0c082937568a5074095964753d408fd5, type: 2}
+    - {fileID: 1101709255344082, guid: c189bd023a78b164ba3e5221baaf657f, type: 2}
+    - {fileID: 1049701335595768, guid: 871f0516eb4fef04786137443fb41356, type: 2}
+  - charId: 1
+    charName: Witch-Chan
+    charBirthday: 1/10/2001
+    charSize: 83 - 65 - 101
+    charInterest: Magic
     pics:
     - {fileID: 21300000, guid: 0b481fbd36947b04eac0e819872126c0, type: 3}
     - {fileID: 21300000, guid: 12da5a900af35fb4387cedad3885f1ee, type: 3}
     - {fileID: 21300000, guid: 9e5b33d0f6582c141b84498cf2090a40, type: 3}
-    characterId: 0
-  - Name: Holy-chan
-    Stat1: fsfngn
-    Stat2: fjgenfng
-    Stat3: ondfno
-    Stat4: o;dfn
-    pics:
-    - {fileID: 21300000, guid: 0b481fbd36947b04eac0e819872126c0, type: 3}
-    - {fileID: 21300000, guid: 12da5a900af35fb4387cedad3885f1ee, type: 3}
-    - {fileID: 21300000, guid: 9e5b33d0f6582c141b84498cf2090a40, type: 3}
-    characterId: 2
+    hurtSound:
+    - mage_aaa
+    - mage_aha
+    - mage_ahu
+    attackSound:
+    - mage_atk
+    MaxHP: 1000000
+    Damage: 50
+    charAnimator: {fileID: 9100000, guid: 57151a8a3a9ac4f42a417e2b401e8d2b, type: 2}
+    AttackTime: 10
+    halfImage: {fileID: 21300000, guid: cbd81bb28f9712240bed198b0a542860, type: 3}
+    finishImage: {fileID: 21300000, guid: 5df3c1c2833b645478ed6e7274e01ed6, type: 3}
+    AttackEffect:
+    - {fileID: 1754006287002200, guid: 9b95da70ec05a3c46b833625a65e8d49, type: 2}
