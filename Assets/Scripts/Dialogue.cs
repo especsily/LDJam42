@@ -7,20 +7,28 @@ using TMPro;
 public class Dialogue : MonoBehaviour 
 {
     public SceneChanger sceneManager;
-    public Text dialogueText;
-    public Text characterNameDialogue;
+    public TMP_Text dialogueText;
+    public TMP_Text characterNameDialogue;
+
     public string characterName;
     public string bossName;
     public string[] characterSentences;
     public string[] bossSentences;
-    private int index=0;
-    private int bossIndex =0;
+
+    public Image mainAvatar;
+    public Image bossAvatar;
+
     public float typingSpeed;
     public GameObject continueButton;
+
+    private int index=0;
+    private int bossIndex =0;
+    
 
     public Coroutine dialogCoroutine;
     private void Start()
     {
+        mainAvatar.gameObject.SetActive(true);
         Type(characterSentences[index]);
         index++;
     }
@@ -48,12 +56,16 @@ public class Dialogue : MonoBehaviour
         if (bossIndex == index-1)
         {
             characterNameDialogue.text = bossName;
+            bossAvatar.gameObject.SetActive(true);
+            mainAvatar.gameObject.SetActive(false);
             Type(bossSentences[bossIndex]);
             bossIndex++;
         }
         else if (index < characterSentences.Length)
         {
             characterNameDialogue.text = characterName;
+            mainAvatar.gameObject.SetActive(true);
+            bossAvatar.gameObject.SetActive(false);
             Type(characterSentences[index]);
             index++;
         }
