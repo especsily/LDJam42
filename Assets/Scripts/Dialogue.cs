@@ -7,8 +7,8 @@ using TMPro;
 public class Dialogue : MonoBehaviour 
 {
     public SceneChanger sceneManager;
-    public TMP_Text dialogueText;
-    public TMP_Text characterNameDialogue;
+    public Text dialogueText;
+    public Text characterNameDialogue;
     public string characterName;
     public string bossName;
     public string[] characterSentences;
@@ -18,31 +18,28 @@ public class Dialogue : MonoBehaviour
     public float typingSpeed;
     public GameObject continueButton;
 
+    public Coroutine dialogCoroutine;
     private void Start()
     {
-        StartCoroutine(Type());
+        Type(characterSentences[index]);
         index++;
     }
 
 
-    IEnumerator Type()
+    void Type(string text)
     {
+        if (dialogCoroutine != null) StopCoroutine(dialogCoroutine);
+        dialogCoroutine = StartCoroutine(PlayDialog(text));
+    }
+
+    IEnumerator PlayDialog(string text) {
         dialogueText.text = "";
-        foreach (char letter in characterSentences[index].ToCharArray())
+        foreach (char letter in text.ToCharArray())
         {
             dialogueText.text += letter;
             yield return new WaitForSeconds(typingSpeed);
         }
-    }
-
-    IEnumerator BossType()
-    {
-        dialogueText.text = "";
-        foreach (char bossletter in bossSentences[bossIndex].ToCharArray())
-        {
-            dialogueText.text += bossletter;
-            yield return new WaitForSeconds(typingSpeed);
-        }
+        dialogCoroutine = null;
     }
 
     public void NextSentence()
@@ -51,13 +48,13 @@ public class Dialogue : MonoBehaviour
         if (bossIndex == index-1)
         {
             characterNameDialogue.text = bossName;
-            StartCoroutine(BossType());
+            Type(bossSentences[bossIndex]);
             bossIndex++;
         }
         else if (index < characterSentences.Length)
         {
             characterNameDialogue.text = characterName;
-            StartCoroutine(Type());
+            Type(characterSentences[index]);
             index++;
         }
         else
